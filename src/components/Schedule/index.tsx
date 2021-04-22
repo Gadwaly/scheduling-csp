@@ -1,5 +1,5 @@
 import Period, { Day } from "./Period";
-import { Variable } from "../../csp";
+import { Variable } from "../../csp/models";
 import ScheduleRow from "./SceduleRow";
 
 interface ScheduleProps {
@@ -30,19 +30,19 @@ const getSchedule = (variables: Variable[]): Period[] => {
   const schedule: Period[] = [];
   let i = 0;
   variables.forEach((variable, index) => {
-    if (variable.assigned_value) {
-      const periods = variable.assigned_value;
+    if (variable.assignedValue) {
+      const periods = variable.assignedValue.periods;
       periods.forEach((period: number[]) => {
-        const day = Math.floor(period[1] / 2),
-          from = period[0] - 12 * day,
-          to = period[1] - 12 * day;
+        const day = Math.floor(period[1] / 12),
+          from = period[0] - 12 * day + 1,
+          to = period[1] - 12 * day + 1;
 
         schedule.push({
           id: i++,
           day,
           from,
           to,
-          course_name: variable.course_name,
+          course_name: variable.courseName,
         });
       });
     }
@@ -60,6 +60,7 @@ const getTimeTable = (schedule: Period[]): Period[][] => {
   ordered.forEach((period) => {
     res[period.day].push(period);
   });
+  console.log(res);
   return res;
 };
 

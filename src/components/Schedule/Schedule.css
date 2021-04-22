@@ -1,0 +1,21 @@
+table {
+  table-layout: fixed;
+}
+
+table tr,
+table th,
+td.tutorial {
+  text-align: center;
+  vertical-align: middle;
+}
+
+td.period {
+  background: #000;
+  color: white;
+}
+td.lecture {
+  background: azure;
+}
+td.lab {
+  background: antiquewhite;
+}

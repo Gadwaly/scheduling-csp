@@ -1,7 +1,7 @@
 import React from "react";
 import Period from "../Period";
 import EmptyCells from "../EmptyCells";
-import styles from "../style.module.css";
+import "../Schedule.css";
 
 interface ScheduleRowProps {
   schedule: Period[];
@@ -24,10 +24,7 @@ const ScheduleRow = ({
             return (
               <React.Fragment key={period.id}>
                 {EmptyCells(i === 0 ? period.from - 1 : 0)}
-                <td
-                  colSpan={period.to - period.from + 1}
-                  className={styles[period.type || 0]}
-                >
+                <td colSpan={period.to - period.from + 1} className="period">
                   {period.course_name}
                 </td>
                 {EmptyCells(
