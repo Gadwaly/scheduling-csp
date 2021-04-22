@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { variables } from './csp/csp'
+import Schedule from './components/Schedule'
 
 function App() {
   useEffect(() => {
@@ -13,7 +14,7 @@ function App() {
 
   return (
     <div className="App">
-      Hello World
+      <Schedule variables={variables} />
     </div>
   );
 }

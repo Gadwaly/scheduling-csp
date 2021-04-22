@@ -11,7 +11,7 @@ class Variable {
 
   public pickFromDomain() {
     this.assignedValue = this.domain.find((value) => {
-      !value.discarded;
+      return !value.discarded;
     });
   }
 
