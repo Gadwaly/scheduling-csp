@@ -45,7 +45,7 @@ class CourseGroup {
   }
 
   clashesWith(currentSchedule: CurrentSchedule) {
-    return this.periods.every((period) => {
+    return this.periods.some((period) => {
       for (let i = period[0]; i < period[1] + 1; i++) {
         if (currentSchedule.schedule[i]) {
           return true;
