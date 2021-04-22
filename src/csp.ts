@@ -105,13 +105,13 @@ const csp = () => {
     .forEach((value) => {
       currentVariable.assigned_value = value;
       const fcOutput = forwardChecking();
-      if(!fcOutput.failed){
-          return csp()
+      if (!fcOutput.failed) {
+        return csp();
       }
-    // backtrack
-    // reset current variable assignment
-    // reset discarded values from fcOutput.discardedValues
+      // backtrack
+      // reset current variable assignment
+      // reset discarded values from fcOutput.discardedValues
     });
 };
 
-export {};
+export { Variable };
