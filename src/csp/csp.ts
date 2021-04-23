@@ -1,6 +1,7 @@
 import { chdir } from "process";
 import { courses, getVariables } from "../data/timetable";
 import { Variable, CourseGroup, CurrentSchedule} from './models'
+import { scheduleUpdated } from './service'
 
 
 const variables: Variable[] = getVariables();
@@ -19,7 +20,7 @@ const pickVariableToAssign = () => {
   return selectedVariable;
 };
 
-const forwardChecking = () => {
+const forwardChecking = (currentVariable: Variable) => {
   let discardedValuesWithVariableIndex: any[] = [];
   let failed = false;
   const currentCourseGroups: CourseGroup[] = variables
@@ -28,6 +29,7 @@ const forwardChecking = () => {
       return variable.assignedValue;
     });
   currentSchedule.update(currentCourseGroups);
+  scheduleUpdated.next({currentVariable: JSON.parse(JSON.stringify(currentVariable)), variables: JSON.parse(JSON.stringify(variables))})
   variables.forEach((variable, index) => {
     if (!variable.assignedValue) {
       const filteredDomain: number[] = variable.filterDomain(currentSchedule);
@@ -48,24 +50,24 @@ function delay(ms: number) {
 }
 
 const csp = () => {
-  console.log("---------------------------------------------------------------------------------\n---------------------------------------------------------------------------------")
-  console.log(currentSchedule, "\n-----")
+  // console.log("---------------------------------------------------------------------------------\n---------------------------------------------------------------------------------")
+  // console.log(currentSchedule, "\n-----")
   const all_assigned = variables.every((variable: Variable) => {
     return variable.assignedValue;
   });
-  console.log("ALL ASSIGNED:  ", all_assigned, "\n-----" )
+  // console.log("ALL ASSIGNED:  ", all_assigned, "\n-----" )
   if (all_assigned) {
     return true;
   }
   const currentVariable: Variable = pickVariableToAssign();
-  console.log("PICKED VARIABLE:  ", currentVariable, "\n-----")
+  // console.log("PICKED VARIABLE:  ", currentVariable, "\n-----")
   currentVariable.domain
     .filter((value) => !value.discarded)
     .forEach((value) => {
       currentVariable.assignedValue = value;
-      const fcOutput = forwardChecking();
-      console.log("FC OUTPUT:  ", fcOutput, "\n-----")      
-      console.log("VARIABLES AFTER FC:  ", variables, "\n-----")      
+      const fcOutput = forwardChecking(currentVariable);
+      // console.log("FC OUTPUT:  ", fcOutput, "\n-----")      
+      // console.log("VARIABLES AFTER FC:  ", variables, "\n-----")      
       if (!fcOutput.failed) {
         return csp();
       }
@@ -82,8 +84,8 @@ const csp = () => {
 };
 
 csp()
-console.log(currentSchedule.scheduleGroups.map(cg => cg.periods))
-console.log(currentSchedule.schedule)
+// console.log(currentSchedule.scheduleGroups.map(cg => cg.periods))
+// console.log(currentSchedule.schedule)
 
 // cuurent
 

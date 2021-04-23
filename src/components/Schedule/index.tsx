@@ -1,9 +1,9 @@
 import Period, { Day } from "./Period";
-import { Variable } from "../../csp/models";
+import { Variable} from "../../csp/models";
 import ScheduleRow from "./SceduleRow";
 
 interface ScheduleProps {
-  variables: Variable[];
+  variables: any;
 }
 
 const Schedule = ({ variables }: ScheduleProps) => {
@@ -60,7 +60,7 @@ const getTimeTable = (schedule: Period[]): Period[][] => {
   ordered.forEach((period) => {
     res[period.day].push(period);
   });
-  console.log(res);
+  // console.log(res);
   return res;
 };
 
