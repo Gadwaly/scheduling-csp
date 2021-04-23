@@ -1,5 +1,4 @@
-import {CourseGroup, Variable} from '../csp/models'
-
+import { CourseGroup, Variable } from "../csp/models";
 
 export const courses: any = [
   {
@@ -155,10 +154,18 @@ export const getVariables = () => {
         );
       } else if ("labs" in group) {
         groups.push(
-          new CourseGroup([group.lecture, group?.lectureExtension, group.labs[0]])
+          new CourseGroup([
+            group.lecture,
+            group?.lectureExtension,
+            group.labs[0],
+          ])
         );
         groups.push(
-          new CourseGroup([group.lecture, group?.lectureExtension, group.labs[1]])
+          new CourseGroup([
+            group.lecture,
+            group?.lectureExtension,
+            group.labs[1],
+          ])
         );
       } else if ("tutorials" in group) {
         groups.push(
@@ -181,5 +188,5 @@ export const getVariables = () => {
     });
     variables.push(new Variable(course.name, groups));
   });
-  return variables  
-}
+  return variables;
+};

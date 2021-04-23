@@ -1,0 +1,24 @@
+.periods_container {
+  display: inline-block;
+  border: 1px solid #dedede;
+  margin: 10px;
+}
+
+.periods_container div {
+  display: inline-block;
+  border: 1px solid #dedede;
+  margin: 5px;
+  padding: 5px;
+}
+
+.periods_container div {
+  display: inline-block;
+  border: 1px solid #dedede;
+  margin: 5px;
+  padding: 5px;
+}
+
+.periods_container.assigned {
+  background-color: #dedede;
+  border: 1px solid seagreen;
+}
