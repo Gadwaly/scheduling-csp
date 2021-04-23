@@ -1,4 +1,4 @@
-import { Variable } from "../../csp/models";
+import { CourseGroup, Variable } from "../../csp/models";
 import "./VariablesView.css";
 
 interface VariablesViewProps {
@@ -18,7 +18,8 @@ export default function VariablesView({
     <>
       {variables &&
         variables.map((variable, index) => {
-          const isCurrent = currentVariable.courseName === variable.courseName;
+          const isCurrent =
+            currentVariable?.courseName === variable?.courseName;
           return (
             <>
               <h1 className={isCurrent ? "current" : ""} key={index}>
@@ -29,8 +30,8 @@ export default function VariablesView({
                   JSON.stringify(group.periods) ===
                   JSON.stringify(variable?.assignedValue?.periods)
                 )
-                  return <Periods periods={group.periods} isAssigned={true} />;
-                return <Periods periods={group.periods} />;
+                  return <Periods group={group} isAssigned={true} />;
+                return <Periods group={group} />;
               })}
             </>
           );
@@ -40,19 +41,23 @@ export default function VariablesView({
 }
 
 function Periods({
-  periods,
+  group,
   isAssigned,
 }: {
-  periods: number[][];
+  group: CourseGroup;
   isAssigned?: boolean;
 }) {
   return (
     <div
       className={
-        isAssigned ? "periods_container assigned" : "periods_container"
+        group.discarded
+          ? "periods_container discarded"
+          : isAssigned
+          ? "periods_container assigned"
+          : "periods_container"
       }
     >
-      {periods.map((period, index) => (
+      {group.periods.map((period, index) => (
         <div key={index}>{period.toString()}</div>
       ))}
     </div>

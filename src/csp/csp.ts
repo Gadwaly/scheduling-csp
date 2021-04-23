@@ -59,6 +59,7 @@ const csp = () => {
   });
   // console.log("ALL ASSIGNED:  ", all_assigned, "\n-----" )
   if (all_assigned) {
+    console.log("true-----------", all_assigned);
     return true;
   }
   const currentVariable: Variable = pickVariableToAssign();

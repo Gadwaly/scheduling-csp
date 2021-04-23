@@ -23,6 +23,11 @@
   border: 1px solid seagreen;
 }
 
-.periods_container.current {
-  color: green;
+.periods_container.discarded {
+  border: 2px solid red;
+}
+
+.current {
+  background-color: black;
+  color: white;
 }
