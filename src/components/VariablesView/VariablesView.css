@@ -22,3 +22,7 @@
   background-color: #dedede;
   border: 1px solid seagreen;
 }
+
+.periods_container.current {
+  color: green;
+}

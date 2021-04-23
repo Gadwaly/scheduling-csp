@@ -28,8 +28,7 @@ function App() {
       setCurrentVariable(cspMoves[currentMoveIndex].currentVariable);
       setCurrentMoveIndex(currentMoveIndex + 1);
     }
-  }, 1000);
-
+  }, 5000);
 
   const logOutput = (val: any) => {
     console.log(val);
@@ -37,7 +36,12 @@ function App() {
 
   return (
     <div className="App">
-      {variables && <VariablesView variables={variables} />}
+      {variables && (
+        <VariablesView
+          variables={variables}
+          currentVariable={currentVariable}
+        />
+      )}
     </div>
   );
 }
