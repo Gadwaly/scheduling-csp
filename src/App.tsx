@@ -1,7 +1,7 @@
 import React, { useEffect, useState,useRef } from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { Variable } from "./csp/csp";
+import { Variable, variables as vrs } from "./csp/csp";
 import Schedule from "./components/Schedule";
 import { scheduleUpdated } from "./csp/service";
 import { fromEvent, interval, from, Observable } from "rxjs";
@@ -14,6 +14,7 @@ function App() {
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(0);
 
   useEffect(() => {
+    console.log(vrs);
     scheduleUpdated.subscribe((newVariables: Variable[]) => {
       cspMoves.push(JSON.parse(JSON.stringify(newVariables)))
     });
@@ -27,6 +28,11 @@ function App() {
       setCurrentMoveIndex(currentMoveIndex + 1);
     }
   }, 1000);
+
+
+  const logOutput = (val: any) => {
+    console.log(val);
+  };
 
   return (
     <div className="App">{variables && <Schedule variables={variables} />}</div>
