@@ -12,6 +12,7 @@ function App() {
   const [currentVariable, setCurrentVariable] = useState<any>();
   const [cspMoves, setCSPMoves] = useState<any>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(0);
+  const [pauseInterval, setPauseInterval] = useState<boolean>(false);
 
   useEffect(() => {
     console.log(vrs);
@@ -21,7 +22,7 @@ function App() {
   }, []);
 
   useInterval(() => {
-    if (cspMoves[currentMoveIndex]) {
+    if (cspMoves[currentMoveIndex] && !pauseInterval) {
       console.log(cspMoves[currentMoveIndex])
       setVariables(cspMoves[currentMoveIndex].variables);
       setCurrentVariable(cspMoves[currentMoveIndex].currentVariable)
@@ -34,8 +35,15 @@ function App() {
     console.log(val);
   };
 
+  const togglePauseInterval = () => {
+    setPauseInterval(!pauseInterval)
+  }
+
   return (
-    <div className="App">{variables && <Schedule variables={variables} />}</div>
+    <React.Fragment>
+      <button onClick={togglePauseInterval}>{pauseInterval ? 'Resume' : 'Pause'}</button>
+      <div className="App">{variables && <Schedule variables={variables} />}</div>
+    </React.Fragment>
   );
 }
 
