@@ -47,11 +47,7 @@ const forwardChecking = (currentVariable: Variable) => {
   };
 };
 
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-const csp = () => {
+const csp = (): any => {
   // console.log("---------------------------------------------------------------------------------\n---------------------------------------------------------------------------------")
   // console.log(currentSchedule, "\n-----")
   const all_assigned = variables.every((variable: Variable) => {
@@ -59,21 +55,24 @@ const csp = () => {
   });
   // console.log("ALL ASSIGNED:  ", all_assigned, "\n-----" )
   if (all_assigned) {
-    console.log("true-----------", all_assigned);
     return true;
   }
   const currentVariable: Variable = pickVariableToAssign();
   // console.log("PICKED VARIABLE:  ", currentVariable, "\n-----")
-  currentVariable.domain
-    .filter((value) => !value.discarded)
-    .forEach((value) => {
+  for (let value of currentVariable.domain) {
+    if (!value.discarded) {
       currentVariable.assignedValue = value;
       const fcOutput = forwardChecking(currentVariable);
+      console.log(fcOutput.failed);
       // console.log("FC OUTPUT:  ", fcOutput, "\n-----")
       // console.log("VARIABLES AFTER FC:  ", variables, "\n-----")
       if (!fcOutput.failed) {
         return csp();
       }
+      scheduleUpdated.next({
+        currentVariable: JSON.parse(JSON.stringify(currentVariable)),
+        variables: JSON.parse(JSON.stringify(variables)),
+      });    
       // backtrack
       // reset current variable assignment
       currentVariable.assignedValue = null;
@@ -87,13 +86,9 @@ const csp = () => {
           });
         }
       );
-    });
+    }
+  }
 };
 
 csp();
-// console.log(currentSchedule.scheduleGroups.map(cg => cg.periods))
-// console.log(currentSchedule.schedule)
-
-// cuurent
-
 export { variables, Variable, CourseGroup };
