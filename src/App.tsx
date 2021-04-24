@@ -14,6 +14,7 @@ function App() {
   const [cspMoves, setCSPMoves] = useState<any>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(0);
   const [pauseInterval, setPauseInterval] = useState<boolean>(false);
+  const [movesSpeed, setMovesSpeed] = useState<number>(1000);
 
   useEffect(() => {
     console.log(vrs);
@@ -29,7 +30,7 @@ function App() {
       setCurrentVariable(cspMoves[currentMoveIndex].currentVariable);
       setCurrentMoveIndex(currentMoveIndex + 1);
     }
-  }, 1000);
+  }, movesSpeed);
 
   const logOutput = (val: any) => {
     console.log(val);
@@ -39,23 +40,48 @@ function App() {
     setPauseInterval(!pauseInterval);
   };
 
+  const changeSpeed = (event: any) => {
+    setMovesSpeed(event.target.value * 1);
+  };
+
   return (
-    <React.Fragment>
-      <button onClick={togglePauseInterval}>
-        {pauseInterval ? "Resume" : "Pause"}
-      </button>
-      <div className="App">
-        {variables && (
-          <>
+    <div className="App">
+      <div className="actions-bar">
+        <div className="action">
+          <button onClick={togglePauseInterval}>
+            {pauseInterval ? "Resume" : "Pause"}
+          </button>
+        </div>
+        <div className="action">
+          <label htmlFor="speeds">
+            Speed
+            <select
+              defaultValue="1000"
+              onChange={changeSpeed}
+              name="speeds"
+              id="speeds"
+            >
+              <option value="100">Fast</option>
+              <option value="1000">Normal</option>
+              <option value="2000">Slow</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      {variables && (
+        <div className="schedule-variables-container">
+          <div className="variables-view">
             <VariablesView
               variables={variables}
               currentVariable={currentVariable}
             />
+          </div>
+          <div className="schedule">
             <Schedule variables={variables} />
-          </>
-        )}
-      </div>
-    </React.Fragment>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
