@@ -72,7 +72,7 @@ const csp = (): any => {
       scheduleUpdated.next({
         currentVariable: JSON.parse(JSON.stringify(currentVariable)),
         variables: JSON.parse(JSON.stringify(variables)),
-      });    
+      });
       // backtrack
       // reset current variable assignment
       currentVariable.assignedValue = null;

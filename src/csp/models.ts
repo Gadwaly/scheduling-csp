@@ -27,12 +27,23 @@ class Variable {
     });
     return discardedCGroupsIndices;
   }
+
+  updateWeights(currentSchedule: CurrentSchedule) {}
 }
 
 class CourseGroup {
   periods: number[][];
   discarded: boolean;
   weight: number;
+
+  constraint1(currentSchedule: CurrentSchedule) {
+    const busyDays = new Array(6).fill(false)
+    
+  }
+
+  constraint2(currentSchedule: CurrentSchedule) {
+    return 20
+  }
 
   public constructor(group: any) {
     group = group.filter((period: any) => period !== undefined);
@@ -53,6 +64,17 @@ class CourseGroup {
       }
       return false;
     });
+  }
+
+  updateWeight(currentSchedule: CurrentSchedule) {
+    const softConstraints = [
+      { priority: 3, constraint: this.constraint1 },
+      { priority: 3, constraint: this.constraint2 },
+    ];
+
+    this.weight = softConstraints.reduce(( accumalator, constraint )  => {
+      return accumalator + (constraint.priority * constraint.constraint(currentSchedule))
+    }, 0)
   }
 }
 
