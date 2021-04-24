@@ -28,7 +28,17 @@ class Variable {
     return discardedCGroupsIndices;
   }
 
-  updateWeights(currentSchedule: CurrentSchedule) {}
+
+  updateWeights(currentSchedule: CurrentSchedule) {
+    this.domain.forEach((courseGroup) =>
+      courseGroup.updateWeight(currentSchedule)
+    );
+
+    this.domain.sort((cGroup1: CourseGroup, cGroup2: CourseGroup) => {
+      return cGroup1.weight >= cGroup2.weight ? 1 : -1;
+    })
+  
+  }
 }
 
 class CourseGroup {
@@ -36,13 +46,31 @@ class CourseGroup {
   discarded: boolean;
   weight: number;
 
-  constraint1(currentSchedule: CurrentSchedule) {
-    const busyDays = new Array(6).fill(false)
-    
+  constraint1 = (currentSchedule: CurrentSchedule) =>  {
+    let addedDaysCount = 0;
+    const busyDays = new Array(6).fill(false);
+    for (let i = 0; i < 6; i++) {
+      for (let j = i * 12; j < i * 12 + 12; j++) {
+        if (currentSchedule.schedule[j]) {
+          busyDays[i] = true;
+          break;
+        }
+      }
+    }
+
+    this.periods.forEach((period) => {
+      let dayIndex = Math.floor(period[0] / 12);
+      if (!busyDays[dayIndex]) {
+        addedDaysCount++;
+        busyDays[dayIndex] = true;
+      }
+    });
+
+    return addedDaysCount;
   }
 
-  constraint2(currentSchedule: CurrentSchedule) {
-    return 20
+  constraint2 = (currentSchedule: CurrentSchedule) => {
+    return 20;
   }
 
   public constructor(group: any) {
@@ -72,9 +100,12 @@ class CourseGroup {
       { priority: 3, constraint: this.constraint2 },
     ];
 
-    this.weight = softConstraints.reduce(( accumalator, constraint )  => {
-      return accumalator + (constraint.priority * constraint.constraint(currentSchedule))
-    }, 0)
+    this.weight = softConstraints.reduce((accumalator, constraint) => {
+      return (
+        accumalator +
+        (constraint.priority * constraint.constraint(currentSchedule))
+      );
+    }, 0);
   }
 }
 

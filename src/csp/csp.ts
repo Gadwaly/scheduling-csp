@@ -35,6 +35,7 @@ const forwardChecking = (currentVariable: Variable) => {
   variables.forEach((variable, index) => {
     if (!variable.assignedValue) {
       const filteredDomain: number[] = variable.filterDomain(currentSchedule);
+      variable.updateWeights(currentSchedule)
       if (variable.domain.every((courseGroup) => courseGroup.discarded)) {
         failed = true;
       }
