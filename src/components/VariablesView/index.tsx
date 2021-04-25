@@ -1,4 +1,5 @@
 import { CourseGroup, Variable } from "../../csp/models";
+import { Day } from "../Schedule/Period";
 import "./VariablesView.css";
 
 interface VariablesViewProps {
@@ -57,9 +58,17 @@ function Periods({
           : "periods_container"
       }
     >
-      {group.periods.map((period, index) => (
-        <div key={index}>{period.toString()}</div>
-      ))}
+      {group.periods.map((period, index) => {
+        const day = Math.floor(period[1] / 12),
+          from = period[0] - 12 * day + 1,
+          to = period[1] - 12 * day + 1;
+        return (
+          <div key={index}>
+            {`${Day[day]} : ` + (from === to ? `${from}` : `[${from} - ${to}]`)}
+          </div>
+        );
+      })}
+      <div>{group.weight}</div>
     </div>
   );
 }
