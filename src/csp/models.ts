@@ -44,7 +44,9 @@ class CourseGroup {
   discarded: boolean;
   weight: number;
 
-  constraint1 = (currentSchedule: CurrentSchedule) => {
+  //gaps / instructors
+
+  minDays = (currentSchedule: CurrentSchedule) => {
     let addedDaysCount = 0;
     const busyDays = new Array(6).fill(false);
     for (let i = 0; i < 6; i++) {
@@ -64,11 +66,62 @@ class CourseGroup {
       }
     });
 
-    return addedDaysCount;
+    return addedDaysCount / 6;
   };
 
-  constraint2 = (currentSchedule: CurrentSchedule) => {
-    return 0;
+  maxDays = (currentSchedule: CurrentSchedule) => {
+    return 1 - this.minDays(currentSchedule);
+  };
+
+  earlyPeriods = (currentSchedule: CurrentSchedule) => {
+    let earliness = 0;
+    this.periods.forEach((period) => {
+      const day = Math.floor(period[0] / 12),
+        from = period[0] - 12 * day + 1;
+
+      earliness += from;
+    });
+
+    return earliness / (12 * this.periods.length);
+  };
+
+  latePeriods = (currentSchedule: CurrentSchedule) => {
+    return 1 - this.earlyPeriods(currentSchedule);
+  };
+
+  gaps = (currentSchedule: CurrentSchedule) => {
+    let gaps = 0;
+    let schedule = [...currentSchedule.schedule];
+    let periodDays: number[] = [];
+
+    this.periods.forEach((period) => {
+      const day = Math.floor(period[0] / 12),
+        from = period[0],
+        to = period[1];
+
+      for (let i = from; i <= to; i++) schedule[i] = true;
+
+      periodDays.push(day);
+    });
+
+    periodDays.forEach((day) => {
+      let firstPeriod = day * 12 + 11,
+        lastPeriod = day * 12;
+
+      for (let i = day * 12; i < day * 12 + 12; i++) {
+        if (schedule[i]) {
+          if (firstPeriod > i) firstPeriod = i;
+          if (lastPeriod < i) lastPeriod = i;
+        }
+      }
+
+      for (let i = firstPeriod; i < lastPeriod; i++) if (!schedule[i]) gaps++;
+    });
+    return gaps / (11 * this.periods.length);
+  };
+
+  gapsPlus = (currentSchedule: CurrentSchedule) => {
+    return 1 - this.gaps(currentSchedule);
   };
 
   public constructor(group: any) {
@@ -94,8 +147,9 @@ class CourseGroup {
 
   updateWeight(currentSchedule: CurrentSchedule) {
     const softConstraints = [
-      { priority: 3, constraint: this.constraint1 },
-      { priority: 3, constraint: this.constraint2 },
+      // { priority: 3, constraint: this.earlyPeriods },
+      // { priority: 20, constraint: this.minDays },
+      { priority: 10, constraint: this.gapsPlus },
     ];
 
     this.weight = softConstraints.reduce((accumalator, constraint) => {
