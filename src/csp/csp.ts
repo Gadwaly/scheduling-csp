@@ -1,21 +1,43 @@
 import { chdir } from "process";
 import { courses, getVariables } from "../data/timetable";
 import { Variable, CourseGroup, CurrentSchedule } from "./models";
-import { scheduleUpdated } from "./service";
+import { scheduleUpdated, startCSP } from "./service";
 
 const variables: Variable[] = getVariables();
 let currentSchedule = new CurrentSchedule();
+let nextMethod = "min-values"
+
+const setNextMethod = (method: string) => {
+  nextMethod = method
+}
 
 const pickVariableToAssign = () => {
-  // Picks the variable with the least number of domain values
-  let min = 1000000;
+  let min = 100000000;
   let selectedVariable: Variable = variables[0];
-  variables.forEach((variable) => {
-    if (!variable.assignedValue && variable.domain.length < min) {
-      selectedVariable = variable;
-      min = variable.domain.length;
+  if(nextMethod == "weights"){
+    for (let variable of variables) {
+      if (!variable.assignedValue) {
+        let availableGroupsCount = variable.domain.filter((group => !group.discarded)).length
+        if(availableGroupsCount == 1){
+          selectedVariable = variable;
+          break;
+        }
+        variable.updateWeights(currentSchedule)
+        if(variable.domain[0].weight < min){
+          selectedVariable = variable;
+          min = variable.domain[0].weight;
+        }
+      }
     }
-  });
+  }else if(nextMethod == "min-values"){
+    // Picks the variable with the least number of domain values
+    variables.forEach((variable) => {
+      if (!variable.assignedValue && variable.domain.length < min) {
+        selectedVariable = variable;
+        min = variable.domain.length;
+      }
+    });
+  }
   return selectedVariable;
 };
 
@@ -91,5 +113,7 @@ const csp = (): any => {
   }
 };
 
-csp();
-export { variables, Variable, CourseGroup };
+startCSP.subscribe(() => {
+  csp();
+})
+export { variables, Variable, CourseGroup, setNextMethod };

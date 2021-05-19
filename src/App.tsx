@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { Variable, variables as vrs } from "./csp/csp";
+import { Variable, variables as vrs, setNextMethod } from "./csp/csp";
 import Schedule from "./components/Schedule";
-import { scheduleUpdated } from "./csp/service";
+import { scheduleUpdated, startCSP } from "./csp/service";
 import { fromEvent, interval, from, Observable } from "rxjs";
 import { debounce, mergeMap, map } from "rxjs/operators";
 import VariablesView from "./components/VariablesView";
@@ -15,6 +15,7 @@ function App() {
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(0);
   const [pauseInterval, setPauseInterval] = useState<boolean>(false);
   const [movesSpeed, setMovesSpeed] = useState<number>(1000);
+  const [started, setStarted] = useState<boolean>(false);
 
   useEffect(() => {
     console.log(vrs);
@@ -44,14 +45,48 @@ function App() {
     setMovesSpeed(event.target.value * 1);
   };
 
+  const changeNextMethod = (event: any) => {
+    setNextMethod(event.target.value)
+  }
+
   return (
     <div className="App">
       <div className="actions-bar">
-        <div className="action">
-          <button onClick={togglePauseInterval}>
-            {pauseInterval ? "Resume" : "Pause"}
-          </button>
-        </div>
+        {!started && (
+          <>
+            <div className="action">
+              <label htmlFor="speeds">
+                Next Variable Method
+                <select
+                  defaultValue="min-values"
+                  onChange={changeNextMethod}
+                  name="next_variable_method"
+                  id="variable-methods"
+                >
+                  <option value="min-values">Min Values</option>
+                  <option value="weights">Weights</option>
+                </select>
+              </label>
+            </div>
+            <div className="action">
+              <button
+                onClick={() => {
+                  startCSP.next();
+                  setStarted(true);
+                }}
+              >
+                Start
+              </button>
+            </div>
+          </>
+        )}
+        {started && (
+          <div className="action">
+            <button onClick={togglePauseInterval}>
+              {pauseInterval ? "Resume" : "Pause"}
+            </button>
+          </div>
+        )}
         <div className="action">
           <label htmlFor="speeds">
             Speed
