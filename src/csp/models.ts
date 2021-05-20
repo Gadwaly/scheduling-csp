@@ -1,3 +1,9 @@
+let selectedPrefernces: any = []
+
+function setSelectedPrefernces(values: any){
+  selectedPrefernces = values
+}
+
 class Variable {
   courseName: string;
   assignedValue: any;
@@ -146,13 +152,16 @@ class CourseGroup {
   }
 
   updateWeight(currentSchedule: CurrentSchedule) {
-    const softConstraints = [
-      // { priority: 3, constraint: this.earlyPeriods },
-      // { priority: 20, constraint: this.minDays },
-      { priority: 10, constraint: this.gapsPlus },
-    ];
+    const softConstraints = selectedPrefernces.map((pref: any) => {
+      return {priority: 10, constraint: eval(`this.${pref}`)}
+    })
+    // const softConstraints = [
+    //   // { priority: 3, constraint: this.earlyPeriods },
+    //   { priority: 100, constraint: this.minDays },
+    //   { priority: 10, constraint: this.gaps },
+    // ];
 
-    this.weight = softConstraints.reduce((accumalator, constraint) => {
+    this.weight = softConstraints.reduce((accumalator: any, constraint: any) => {
       return (
         accumalator +
         constraint.priority * constraint.constraint(currentSchedule)
@@ -178,4 +187,4 @@ class CurrentSchedule {
   }
 }
 
-export { Variable, CourseGroup, CurrentSchedule };
+export { Variable, CourseGroup, CurrentSchedule, setSelectedPrefernces };

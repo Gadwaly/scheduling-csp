@@ -7,6 +7,7 @@ import { scheduleUpdated, startCSP } from "./csp/service";
 import { fromEvent, interval, from, Observable } from "rxjs";
 import { debounce, mergeMap, map } from "rxjs/operators";
 import VariablesView from "./components/VariablesView";
+import { setSelectedPrefernces } from "./csp/models";
 
 function App() {
   const [variables, setVariables] = useState<Variable[]>();
@@ -49,11 +50,29 @@ function App() {
     setNextMethod(event.target.value)
   }
 
+  const setPreferences = (event: any) => {
+    let selectedPreferences = Array.from(event.target.selectedOptions).map((option: any) => option.value)
+    setSelectedPrefernces(selectedPreferences)
+
+  }
+
   return (
     <div className="App">
       <div className="actions-bar">
         {!started && (
           <>
+          <div className="action">
+          <label htmlFor="preferences">Select Preferences:</label>
+
+            <select name="preferences" id="preferences" onChange={setPreferences} multiple>
+              <option value="minDays">Min Days</option>
+              <option value="maxDays">Max Days</option>
+              <option value="earlyPeriods">Early Periods</option>
+              <option value="latePeriods">Late Periods</option>
+              <option value="gaps">Min Gaps</option>
+              <option value="gapsPlus">Max Gaps</option>
+            </select>
+          </div>
             <div className="action">
               <label htmlFor="speeds">
                 Next Variable Method
@@ -102,6 +121,7 @@ function App() {
             </select>
           </label>
         </div>
+        
       </div>
       {variables && (
         <div className="schedule-variables-container">

@@ -68,7 +68,7 @@ function Periods({
           </div>
         );
       })}
-      <div>{group.weight}</div>
+      <div>{Math.round(group.weight * 100) / 100}</div>
     </div>
   );
 }

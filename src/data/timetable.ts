@@ -148,7 +148,7 @@ export const courses: any = [
         instructor: "x",
         lecture: [2, 2, 4],
         tutorials: [
-          [1, 1, 1],
+          [3, 3, 3],
           [1, 2, 2],
         ],
       },
