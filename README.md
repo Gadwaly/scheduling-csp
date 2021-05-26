@@ -2,6 +2,11 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+Configure **PORT** number in .env file in the root directory
+```yaml
+PORT=<YOUR_WANTED_PORT_NUMBER>
+```
+
 ## Available Scripts
 
 In the project directory, you can run:
