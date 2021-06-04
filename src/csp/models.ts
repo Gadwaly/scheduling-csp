@@ -1,7 +1,36 @@
 let selectedPrefernces: any = []
 
-function setSelectedPrefernces(values: any){
-  selectedPrefernces = values
+const setPreferences = (values: any) => {
+  if(values?.earlyLate) {
+    const earlyLate = values.earlyLate.toLowerCase();
+    const value = earlyLate == 'early' ? 'earlyPeriods': 'latePeriods';
+    selectedPrefernces.push({ constraint: `this.${value}`, priority: earlyLate.order });
+  }
+  // if(values?.daysOff) {
+  //   const daysOff = values.daysOff.toLowerCase();
+  //   const value = daysOff == 'early' ? 'earlyPeriods': 'latePeriods';
+  //   selectedPrefernces.push({ constraint: `this.${value}`, priority: daysOff.order });
+  // }
+  if(values?.gaps) {
+    const gaps = values.gaps.toLowerCase();
+    const value = gaps == 'min' ? 'gaps': 'gapsPlus';
+    selectedPrefernces.push({ constraint: `this.${value}`, priority: gaps.order });
+  }
+  if(values?.minMaxDays) {
+    const minMaxDays = values.minMaxDays.toLowerCase();
+    const value = minMaxDays == 'min' ? 'minDays': 'maxDays';
+    selectedPrefernces.push({ constraint: `this.${value}`, priority: minMaxDays.order });
+  }
+}
+
+const dayNumber: any = {
+  'saturday': 0,
+  'sunday': 1,
+  'monday': 2,
+  'tuesday': 3,
+  'wednesday': 4,
+  'thursday': 5,
+  'friday': 6
 }
 
 class Variable {
@@ -49,6 +78,7 @@ class CourseGroup {
   periods: number[][];
   discarded: boolean;
   weight: number;
+  periodsObjects: any[];
 
   //gaps / instructors
 
@@ -132,9 +162,11 @@ class CourseGroup {
 
   public constructor(group: any) {
     group = group.filter((period: any) => period !== undefined);
+    this.periodsObjects = [];
     this.periods = group.map((period: any) => {
-      let dayBase = period[0] * 12;
-      return [dayBase + (period[1] - 1), dayBase + (period[2] - 1)];
+      let dayBase = dayNumber[period.day] * 12;
+      this.periodsObjects.push(period);
+      return [dayBase + (period.from - 1), dayBase + (period.to - 1)];
     });
     this.discarded = false;
     this.weight = 0;
@@ -152,15 +184,7 @@ class CourseGroup {
   }
 
   updateWeight(currentSchedule: CurrentSchedule) {
-    const softConstraints = selectedPrefernces.map((pref: any) => {
-      return {priority: 10, constraint: eval(`this.${pref}`)}
-    })
-    // const softConstraints = [
-    //   // { priority: 3, constraint: this.earlyPeriods },
-    //   { priority: 100, constraint: this.minDays },
-    //   { priority: 10, constraint: this.gaps },
-    // ];
-
+    const softConstraints = selectedPrefernces;
     this.weight = softConstraints.reduce((accumalator: any, constraint: any) => {
       return (
         accumalator +
@@ -185,6 +209,10 @@ class CurrentSchedule {
       });
     });
   }
+  
+  getPeriodsObjects = () => {
+    return this.scheduleGroups.map((group) => group.periodsObjects);
+  }
 }
 
-export { Variable, CourseGroup, CurrentSchedule, setSelectedPrefernces };
+export { Variable, CourseGroup, CurrentSchedule, setPreferences };

@@ -1,9 +1,8 @@
 import { chdir } from "process";
-import { courses, getVariables } from "../data/timetable";
 import { Variable, CourseGroup, CurrentSchedule } from "./models";
 import { scheduleUpdated, startCSP } from "./service";
 
-const variables: Variable[] = getVariables();
+let variables: Variable[];
 let currentSchedule = new CurrentSchedule();
 let nextMethod = "min-values"
 
@@ -116,4 +115,4 @@ const csp = (): any => {
 startCSP.subscribe(() => {
   csp();
 })
-export { variables, Variable, CourseGroup, setNextMethod };
+export { variables, Variable, CourseGroup, setNextMethod, csp, currentSchedule };
