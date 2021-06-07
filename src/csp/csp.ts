@@ -2,33 +2,35 @@ import { chdir } from "process";
 import { Variable, CourseGroup, CurrentSchedule } from "./models";
 import { scheduleUpdated, startCSP } from "./service";
 
-let variables: Variable[];
+let variables: Variable[] = [];
 let currentSchedule = new CurrentSchedule();
-let nextMethod = "min-values"
+let nextMethod = "min-values";
 
 const setNextMethod = (method: string) => {
-  nextMethod = method
-}
+  nextMethod = method;
+};
 
 const pickVariableToAssign = () => {
   let min = 100000000;
   let selectedVariable: Variable = variables[0];
-  if(nextMethod == "weights"){
+  if (nextMethod == "weights") {
     for (let variable of variables) {
       if (!variable.assignedValue) {
-        let availableGroupsCount = variable.domain.filter((group => !group.discarded)).length
-        if(availableGroupsCount == 1){
+        let availableGroupsCount = variable.domain.filter(
+          (group) => !group.discarded
+        ).length;
+        if (availableGroupsCount == 1) {
           selectedVariable = variable;
           break;
         }
-        variable.updateWeights(currentSchedule)
-        if(variable.domain[0].weight < min){
+        variable.updateWeights(currentSchedule);
+        if (variable.domain[0].weight < min) {
           selectedVariable = variable;
           min = variable.domain[0].weight;
         }
       }
     }
-  }else if(nextMethod == "min-values"){
+  } else if (nextMethod == "min-values") {
     // Picks the variable with the least number of domain values
     variables.forEach((variable) => {
       if (!variable.assignedValue && variable.domain.length < min) {
@@ -56,7 +58,7 @@ const forwardChecking = (currentVariable: Variable) => {
   variables.forEach((variable, index) => {
     if (!variable.assignedValue) {
       const filteredDomain: number[] = variable.filterDomain(currentSchedule);
-      variable.updateWeights(currentSchedule)
+      variable.updateWeights(currentSchedule);
       if (variable.domain.every((courseGroup) => courseGroup.discarded)) {
         failed = true;
       }
@@ -67,6 +69,13 @@ const forwardChecking = (currentVariable: Variable) => {
     failed,
     discardedValuesWithVariableIndex,
   };
+};
+
+const getFinalSchedule = () => {
+  console.log(JSON.parse(JSON.stringify(variables)));
+  return variables.map((variable) => {
+    return variable.getRegisteredGroup();
+  });
 };
 
 const csp = (): any => {
@@ -114,5 +123,13 @@ const csp = (): any => {
 
 startCSP.subscribe(() => {
   csp();
-})
-export { variables, Variable, CourseGroup, setNextMethod, csp, currentSchedule };
+});
+export {
+  variables,
+  Variable,
+  CourseGroup,
+  setNextMethod,
+  csp,
+  currentSchedule,
+  getFinalSchedule,
+};

@@ -1,10 +1,10 @@
-import { setVariables } from './data/timetable';
-import { setPreferences } from './csp/models';
-import { csp, currentSchedule } from './csp/csp';
+import { setVariables } from "./data/timetable";
+import { setPreferences } from "./csp/models";
+import { csp, currentSchedule, getFinalSchedule } from "./csp/csp";
 
 export const register = (data: any) => {
-  setVariables(data.courses);
+  setVariables(data.table);
   setPreferences(data.preferences);
   csp();
-  return currentSchedule.getPeriodsObjects();
+  return getFinalSchedule();
 };

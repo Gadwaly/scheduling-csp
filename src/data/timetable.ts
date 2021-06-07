@@ -1,186 +1,111 @@
 import { CourseGroup, Variable } from "../csp/models";
-import { variables } from '../csp/csp';
+import { variables } from "../csp/csp";
 
 export const setVariables = (courses: any) => {
-  courses.forEach((course: any) => {
+  const courseCodes = Object.keys(courses);
+  courseCodes.forEach((courseCode) => {
+    let course = courses[courseCode];
     let groups: any = [];
-    course.groups.map((group: any) => {
-      if (group.hasTutorial && group.hasLab) {
+    const groupNumbers = Object.keys(course.groups);
+    groupNumbers.forEach((groupNum: any) => {
+      let group = course.groups[groupNum];
+      const tutorialIds = Object.keys(group.tutorials);
+      const labIds = Object.keys(group.labs);
+      if (course.hasTutorial && course.hasLab) {
         groups.push(
-          new CourseGroup([
+          new CourseGroup(groupNum, [
             group.lectures[0],
             group.lectures[1],
-            group.tutorials[0],
-            group.labs[0],
+            {
+              ...group.tutorials[tutorialIds[0]],
+              id: tutorialIds[0],
+              type: "tutorial",
+            },
+            { ...group.labs[labIds[0]], id: labIds[0], type: "lab" },
           ])
         );
         groups.push(
-          new CourseGroup([
+          new CourseGroup(groupNum, [
             group.lectures[0],
             group.lectures[1],
-            group.tutorials[1],
-            group.labs[0],
+            {
+              ...group.tutorials[tutorialIds[1]],
+              id: tutorialIds[1],
+              type: "tutorial",
+            },
+            { ...group.labs[labIds[0]], id: labIds[0], type: "lab" },
           ])
         );
         groups.push(
-          new CourseGroup([
+          new CourseGroup(groupNum, [
             group.lectures[0],
             group.lectures[1],
-            group.tutorials[0],
-            group.labs[1],
+            {
+              ...group.tutorials[tutorialIds[0]],
+              id: tutorialIds[0],
+              type: "tutorial",
+            },
+            { ...group.labs[labIds[1]], id: labIds[1], type: "lab" },
           ])
         );
         groups.push(
-          new CourseGroup([
+          new CourseGroup(groupNum, [
             group.lectures[0],
             group.lectures[1],
-            group.tutorials[1],
-            group.labs[1],
+            {
+              ...group.tutorials[tutorialIds[1]],
+              id: tutorialIds[1],
+              type: "tutorial",
+            },
+            { ...group.labs[labIds[1]], id: labIds[1], type: "lab" },
           ])
         );
       } else if (group.hasLab) {
         groups.push(
-          new CourseGroup([
+          new CourseGroup(groupNum, [
             group.lectures[0],
             group.lectures[1],
-            group.labs[0],
+            { ...group.labs[labIds[0]], id: labIds[0], type: "lab" },
           ])
         );
         groups.push(
-          new CourseGroup([
+          new CourseGroup(groupNum, [
             group.lectures[0],
             group.lectures[1],
-            group.labs[1],
+            { ...group.labs[labIds[1]], id: labIds[1], type: "lab" },
           ])
         );
-      } else if (group.hasTutorial) {
+      } else if (course.hasTutorial) {
         groups.push(
-          new CourseGroup([
+          new CourseGroup(groupNum, [
             group.lectures[0],
             group.lectures[1],
-            group.tutorials[0],
+            {
+              ...group.tutorials[tutorialIds[0]],
+              id: tutorialIds[0],
+              type: "tutorial",
+            },
           ])
         );
         groups.push(
-          new CourseGroup([
+          new CourseGroup(groupNum, [
             group.lectures[0],
             group.lectures[1],
-            group.tutorials[1],
+            {
+              ...group.tutorials[tutorialIds[1]],
+              id: tutorialIds[1],
+              type: "tutorial",
+            },
           ])
         );
       } else {
-        groups.push(new CourseGroup([group.lectures[0], group.lectures[1]]));
+        groups.push(
+          new CourseGroup(groupNum, [group.lectures[0], group.lectures[1]])
+        );
       }
     });
-    variables.push(new Variable(course.name, groups));
+    variables.push(new Variable(course.name, courseCode, groups));
   });
+  console.log("CC100 VARIABLES-----------");
+  console.log(JSON.parse(JSON.stringify(variables[1].domain)));
 };
-
-
-/*
-{
-	"courses": [
-		{
-			"code": "CC461",
-			"name": "anyName",
-			"creditHours": "3",
-			"hasLab": true,
-			"hasTutorial": false,
-			"groups": [
-			{
-				"id": 12,
-				"number": 1,
-				"instructor": {
-					"id": 13,
-					"name": "Ahmed"
-				},
-				"lectures": [
-					{
-						"id": 121212,
-						"place": {
-							"room": 12,
-							"building": 232,
-							"label": "Hello world"
-						},
-						"day": "Saturday",
-						"from": 1,
-						"to": 2,
-						"label": "Hello World",
-						"instructor": {
-							"id": 13,
-							"name": "Ahmed"
-						}
-					}
-				],
-				"tutorials": [
-					{
-						"id": 121212,
-						"place": {
-							"room": 12,
-							"building": 232,
-							"label": "Hello world"
-						},
-						"day": "Saturday",
-						"from": 1,
-						"to": 2,
-						"label": "Hello World",
-						"instructor": {
-							"id": 13,
-							"name": "Ahmed"
-						}
-					}
-				],
-				"labs": [
-					{
-						"id": 121212,
-						"place": {
-							"room": 12,
-							"building": 232,
-							"label": "Hello world"
-						},
-						"day": "Saturday",
-						"from": 1,
-						"to": 2,
-						"label": "Hello World",
-						"instructor": {
-							"id": 13,
-							"name": "Ahmed"
-						}
-					}
-				]
-			},
-			..
-			]
-		}
-	],
-	"preferences": {
-		"courses": [
-		{
-			"code": "CC461",
-			"instructor": "5|null"
-		},
-		{
-			"code": "CC462",
-			"instructor": "7|null"
-		},
-		..
-		],
-		"earlyLate": {
-			"value": "early" | "late" | null,
-			"order": "3" | null,
-		},
-		"daysOff": {
-			"value": ["saturday", "thursday"],
-			"order": "5" | null,
-		},
-		"gaps": {
-			"value": "min" | "max" | null,
-			"order": "6" | null,
-		}
-		"minMaxDays": {
-			"value": "min" | "max" | null,
-			"order": "6" | null
-		}
-	}
-}
-*/

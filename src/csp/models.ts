@@ -1,47 +1,58 @@
-let selectedPrefernces: any = []
+let selectedPrefernces: any = [];
 
 const setPreferences = (values: any) => {
-  if(values?.earlyLate) {
-    const earlyLate = values.earlyLate.toLowerCase();
-    const value = earlyLate == 'early' ? 'earlyPeriods': 'latePeriods';
-    selectedPrefernces.push({ constraint: `this.${value}`, priority: earlyLate.order });
+  if (values?.earlyLate) {
+    const earlyLate = values.earlyLate.value.toLowerCase();
+    const value = earlyLate == "early" ? "earlyPeriods" : "latePeriods";
+    selectedPrefernces.push({
+      constraint: `this.${value}`,
+      priority: earlyLate.order,
+    });
   }
   // if(values?.daysOff) {
   //   const daysOff = values.daysOff.toLowerCase();
   //   const value = daysOff == 'early' ? 'earlyPeriods': 'latePeriods';
   //   selectedPrefernces.push({ constraint: `this.${value}`, priority: daysOff.order });
   // }
-  if(values?.gaps) {
-    const gaps = values.gaps.toLowerCase();
-    const value = gaps == 'min' ? 'gaps': 'gapsPlus';
-    selectedPrefernces.push({ constraint: `this.${value}`, priority: gaps.order });
+  if (values?.gaps) {
+    const gaps = values.gaps.value.toLowerCase();
+    const value = gaps == "min" ? "gaps" : "gapsPlus";
+    selectedPrefernces.push({
+      constraint: `this.${value}`,
+      priority: gaps.order,
+    });
   }
-  if(values?.minMaxDays) {
-    const minMaxDays = values.minMaxDays.toLowerCase();
-    const value = minMaxDays == 'min' ? 'minDays': 'maxDays';
-    selectedPrefernces.push({ constraint: `this.${value}`, priority: minMaxDays.order });
+  if (values?.minMaxDays) {
+    const minMaxDays = values.minMaxDays.value.toLowerCase();
+    const value = minMaxDays == "min" ? "minDays" : "maxDays";
+    selectedPrefernces.push({
+      constraint: `this.${value}`,
+      priority: minMaxDays.order,
+    });
   }
-}
+};
 
 const dayNumber: any = {
-  'saturday': 0,
-  'sunday': 1,
-  'monday': 2,
-  'tuesday': 3,
-  'wednesday': 4,
-  'thursday': 5,
-  'friday': 6
-}
+  saturday: 0,
+  sunday: 1,
+  monday: 2,
+  tuesday: 3,
+  wednesday: 4,
+  thursday: 5,
+  friday: 6,
+};
 
 class Variable {
   courseName: string;
+  courseCode: string;
   assignedValue: any;
   domain: CourseGroup[];
 
-  public constructor(name: string, domain: any) {
+  public constructor(name: string, code: string, domain: any) {
     this.assignedValue = null;
     this.domain = domain;
     this.courseName = name;
+    this.courseCode = code;
   }
 
   public pickFromDomain() {
@@ -72,13 +83,23 @@ class Variable {
       return cGroup1.weight >= cGroup2.weight ? 1 : -1;
     });
   }
+
+  getRegisteredGroup() {
+    return {
+      code: this.courseCode,
+      group: this.assignedValue.groupNum,
+      tutorial: this.assignedValue.periodsIds.tutorial,
+      lab: this.assignedValue.periodsIds.lab,
+    };
+  }
 }
 
 class CourseGroup {
   periods: number[][];
   discarded: boolean;
   weight: number;
-  periodsObjects: any[];
+  periodsIds: any;
+  groupNum: any;
 
   //gaps / instructors
 
@@ -160,12 +181,18 @@ class CourseGroup {
     return 1 - this.gaps(currentSchedule);
   };
 
-  public constructor(group: any) {
+  public constructor(groupNum: any, group: any) {
+    this.groupNum = groupNum;
     group = group.filter((period: any) => period !== undefined);
-    this.periodsObjects = [];
+    this.periodsIds = {
+      tutorial: null,
+      lab: null,
+    };
     this.periods = group.map((period: any) => {
       let dayBase = dayNumber[period.day] * 12;
-      this.periodsObjects.push(period);
+      if (period.type) {
+        this.periodsIds[period.type] = period.id;
+      }
       return [dayBase + (period.from - 1), dayBase + (period.to - 1)];
     });
     this.discarded = false;
@@ -185,12 +212,15 @@ class CourseGroup {
 
   updateWeight(currentSchedule: CurrentSchedule) {
     const softConstraints = selectedPrefernces;
-    this.weight = softConstraints.reduce((accumalator: any, constraint: any) => {
-      return (
-        accumalator +
-        constraint.priority * constraint.constraint(currentSchedule)
-      );
-    }, 0);
+    this.weight = softConstraints.reduce(
+      (accumalator: any, constraint: any) => {
+        return (
+          accumalator +
+          constraint.priority * constraint.constraint(currentSchedule)
+        );
+      },
+      0
+    );
   }
 }
 
@@ -208,10 +238,6 @@ class CurrentSchedule {
         }
       });
     });
-  }
-  
-  getPeriodsObjects = () => {
-    return this.scheduleGroups.map((group) => group.periodsObjects);
   }
 }
 

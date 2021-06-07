@@ -53,7 +53,12 @@ function App() {
   const setPreferences = (event: any) => {
     let selectedPreferences = Array.from(event.target.selectedOptions).map((option: any) => option.value)
     setSelectedPrefernces(selectedPreferences)
+  }
 
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      window.scrollTo(0,document.body.scrollHeight);
+    }, 1000)
   }
 
   return (
@@ -75,14 +80,14 @@ function App() {
           </div>
             <div className="action">
               <label htmlFor="speeds">
-                Next Variable Method
+                Next Variable Heuristic
                 <select
                   defaultValue="min-values"
                   onChange={changeNextMethod}
                   name="next_variable_method"
                   id="variable-methods"
                 >
-                  <option value="min-values">Min Values</option>
+                  <option value="min-values">Minimum Possible Values</option>
                   <option value="weights">Weights</option>
                 </select>
               </label>
@@ -92,6 +97,7 @@ function App() {
                 onClick={() => {
                   startCSP.next();
                   setStarted(true);
+                  scrollToBottom();
                 }}
               >
                 Start

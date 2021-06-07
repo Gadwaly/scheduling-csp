@@ -23,7 +23,7 @@ export default function VariablesView({
             currentVariable?.courseName === variable?.courseName;
           return (
             <>
-              <h1 className={isCurrent ? "current" : ""} key={index}>
+              <h1 style={{marginTop: "7px", marginBottom: "3px"}} className={isCurrent ? "current" : ""} key={index}>
                 {variable.courseName}
               </h1>
               {variable.domain.map((group) => {
