@@ -17,7 +17,11 @@ app.post("/register", (req: Request, res: Response) => {
   console.dir(body);
   const response = register(body);
   console.dir(response);
-  res.send({ response });
+  res.send(response);
+});
+
+app.post("/reset", (_req: Request, res: Response) => {
+  res.status(200).send("Scheduler has been reset");
 });
 
 app.post("/*", (_req: Request, res: Response) => {

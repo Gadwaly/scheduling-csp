@@ -60,7 +60,7 @@ export const setVariables = (courses: any) => {
             { ...group.labs[labIds[1]], id: labIds[1], type: "lab" },
           ])
         );
-      } else if (group.hasLab) {
+      } else if (course.hasLab) {
         groups.push(
           new CourseGroup(groupNum, [
             group.lectures[0],
@@ -106,6 +106,4 @@ export const setVariables = (courses: any) => {
     });
     variables.push(new Variable(course.name, courseCode, groups));
   });
-  console.log("CC100 VARIABLES-----------");
-  console.log(JSON.parse(JSON.stringify(variables[1].domain)));
 };
