@@ -1,7 +1,18 @@
-import { CourseGroup, Variable } from "../csp/models";
-import { variables } from "../csp/csp";
+import { CourseGroup } from '../models/CourseGroup';
+import { Variable } from '../models/Variable';
 
-export const setVariables = (courses: any) => {
+export let selectedPreferences: any;
+let variables: Variable[];
+
+export const setData = (data: any) => {
+  selectedPreferences = [];
+  variables = [];
+  setVariables(data.table);
+  setPreferences(data.preferences);
+  return { variables, selectedPreferences };
+};
+
+const setVariables = (courses: any) => {
   const courseCodes = Object.keys(courses);
   courseCodes.forEach((courseCode) => {
     let course = courses[courseCode];
@@ -106,4 +117,31 @@ export const setVariables = (courses: any) => {
     });
     variables.push(new Variable(course.name, courseCode, groups));
   });
+};
+
+const setPreferences = (values: any) => {
+  if (values?.earlyLate) {
+    const earlyLate = values.earlyLate.value.toLowerCase();
+    const value = earlyLate == "early" ? "earlyPeriods" : "latePeriods";
+    selectedPreferences.push({
+      constraint: `${value}`,
+      priority: earlyLate.order,
+    });
+  }
+  if (values?.gaps) {
+    const gaps = values.gaps.value.toLowerCase();
+    const value = gaps == "min" ? "gaps" : "gapsPlus";
+    selectedPreferences.push({
+      constraint: `${value}`,
+      priority: gaps.order,
+    });
+  }
+  if (values?.minMaxDays) {
+    const minMaxDays = values.minMaxDays.value.toLowerCase();
+    const value = minMaxDays == "min" ? "minDays" : "maxDays";
+    selectedPreferences.push({
+      constraint: `${value}`,
+      priority: minMaxDays.order,
+    });
+  }
 };
