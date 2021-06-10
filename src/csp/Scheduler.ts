@@ -131,8 +131,8 @@ export class Scheduler {
     return this.getFinalSchedule();
   }
 
-  startCSP.subscribe(() => {
-    this.csp();
-  });
+  // startCSP.subscribe(() => {
+  //   this.csp();
+  // });
 };
 
