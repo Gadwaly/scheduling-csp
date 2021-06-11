@@ -1,7 +1,7 @@
-import { CurrentSchedule } from './CurrentSchedule';
+import { CurrentSchedule } from '.';
 import { selectedPreferences } from '../services';
 
-const dayNumber: any = {
+const dayNumber = {
   saturday: 0,
   sunday: 1,
   monday: 2,
@@ -9,7 +9,7 @@ const dayNumber: any = {
   wednesday: 4,
   thursday: 5,
   friday: 6,
-};
+} as const;
 
 export class CourseGroup {
   periods: number[][];
@@ -34,9 +34,9 @@ export class CourseGroup {
     });
     this.discarded = false;
     this.weight = 0;
-  }
+  };
 
-  minDays = (currentSchedule: CurrentSchedule) => {
+  minDays = (currentSchedule: CurrentSchedule): number => {
     let addedDaysCount = 0;
     const busyDays = new Array(6).fill(false);
     for (let i = 0; i < 6; i++) {
@@ -59,11 +59,11 @@ export class CourseGroup {
     return addedDaysCount / 6;
   };
 
-  maxDays = (currentSchedule: CurrentSchedule) => {
+  maxDays = (currentSchedule: CurrentSchedule): number => {
     return 1 - this.minDays(currentSchedule);
   };
 
-  earlyPeriods = (_currentSchedule: CurrentSchedule) => {
+  earlyPeriods = (_currentSchedule: CurrentSchedule): number => {
     let earliness = 0;
     this.periods.forEach((period) => {
       const day = Math.floor(period[0] / 12),
@@ -75,11 +75,11 @@ export class CourseGroup {
     return earliness / (12 * this.periods.length);
   };
 
-  latePeriods = (currentSchedule: CurrentSchedule) => {
+  latePeriods = (currentSchedule: CurrentSchedule): number => {
     return 1 - this.earlyPeriods(currentSchedule);
   };
 
-  gaps = (currentSchedule: CurrentSchedule) => {
+  gaps = (currentSchedule: CurrentSchedule): number => {
     let gaps = 0;
     let schedule = [...currentSchedule.schedule];
     let periodDays: number[] = [];
@@ -110,12 +110,12 @@ export class CourseGroup {
     return gaps / (11 * this.periods.length);
   };
 
-  gapsPlus = (currentSchedule: CurrentSchedule) => {
+  gapsPlus = (currentSchedule: CurrentSchedule): number => {
     return 1 - this.gaps(currentSchedule);
   };
 
 
-  clashesWith(currentSchedule: CurrentSchedule) {
+  clashesWith = (currentSchedule: CurrentSchedule): boolean => {
     return this.periods.some((period) => {
       for (let i = period[0]; i < period[1] + 1; i++) {
         if (currentSchedule.schedule[i]) {
@@ -124,9 +124,9 @@ export class CourseGroup {
       }
       return false;
     });
-  }
+  };
 
-  updateWeight(currentSchedule: CurrentSchedule) {
+  updateWeight = (currentSchedule: CurrentSchedule): void => {
     const softConstraints = selectedPreferences;
     this.weight = softConstraints.reduce(
       (accumalator: any, constraint: any) => {
@@ -137,5 +137,5 @@ export class CourseGroup {
       },
       0
     );
-  }
-}
+  };
+};

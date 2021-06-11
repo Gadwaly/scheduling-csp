@@ -1,10 +1,10 @@
-import { CourseGroup } from './CourseGroup';
+import { CourseGroup } from '.';
 
 export class CurrentSchedule {
   schedule: boolean[] = [];
   scheduleGroups: CourseGroup[] = [];
 
-  update(groups: CourseGroup[]) {
+  update = (groups: CourseGroup[]): void => {
     this.scheduleGroups = groups;
     this.schedule = new Array(72).fill(false);
     groups.forEach((group) => {

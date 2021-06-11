@@ -7,27 +7,27 @@ dotenv.config();
 
 const app: Application = express();
 
-app.use(morgan("dev"));
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.post("/register", (req: Request, res: Response) => {
+app.post('/register', (req: Request, res: Response) => {
   const body = req.body;
   const response = register(body);
   console.dir(response);
   res.send(response);
 });
 
-app.post("/reset", (_req: Request, res: Response) => {
-  res.status(200).send("Scheduler has been reset");
+app.post('/reset', (_req: Request, res: Response) => {
+  res.status(200).send('Scheduler has been reset');
 });
 
-app.post("/*", (_req: Request, res: Response) => {
-  res.status(404).send("The only post requests available are POST /register or POST /reset");
+app.post('/*', (_req: Request, res: Response) => {
+  res.status(404).send('The only post requests available are POST /register or POST /reset');
 });
 
-app.get("/*", (_req: Request, res: Response) => {
-  res.status(404).send("Sorry, Something went error");
+app.get('/*', (_req: Request, res: Response) => {
+  res.status(404).send('Sorry, Something went error');
 });
 
 try {

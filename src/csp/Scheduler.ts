@@ -12,11 +12,11 @@ export class Scheduler {
     this.nextMethod = (data.nextMethod) ? data.nextMethod: 'min-values';
   }
 
-  setNextMethod = (method: string) => {
+  setNextMethod = (method: string): void => {
     this.nextMethod = method;
   };
 
-  pickVariableToAssign = () => {
+  pickVariableToAssign = (): Variable => {
     let min = 100000000;
     let selectedVariable: Variable = this.variables[0];
     if (this.nextMethod == "weights") {
@@ -131,8 +131,8 @@ export class Scheduler {
     return this.getFinalSchedule();
   }
 
-  startCSP.subscribe(() => {
-    this.csp();
-  });
+  // startCSP.subscribe(() => {
+  //   this.csp();
+  // });
 };
 

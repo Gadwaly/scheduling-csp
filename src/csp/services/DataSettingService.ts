@@ -1,10 +1,10 @@
-import { CourseGroup } from '../models/CourseGroup';
-import { Variable } from '../models/Variable';
+import { CourseGroup, Variable } from '../models';
+import { RegistrationData } from '../types';
 
 export let selectedPreferences: any;
 let variables: Variable[];
 
-export const setData = (data: any) => {
+export const setData = (data: RegistrationData) => {
   selectedPreferences = [];
   variables = [];
   setVariables(data.table);

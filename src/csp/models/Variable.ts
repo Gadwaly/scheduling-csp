@@ -13,13 +13,13 @@ export class Variable {
     this.courseCode = code;
   }
 
-  pickFromDomain() {
+  pickFromDomain = (): void => {
     this.assignedValue = this.domain.find((value) => {
       return !value.discarded;
     });
   }
 
-  filterDomain(currentSchedule: CurrentSchedule) {
+  filterDomain = (currentSchedule: CurrentSchedule): number[] => {
     let discardedCGroupsIndices: number[] = [];
     this.domain.forEach((courseGroup, index) => {
       if (!courseGroup.discarded) {
@@ -32,7 +32,7 @@ export class Variable {
     return discardedCGroupsIndices;
   }
 
-  updateWeights(currentSchedule: CurrentSchedule) {
+  updateWeights = (currentSchedule: CurrentSchedule): void => {
     this.domain.forEach((courseGroup) =>
       courseGroup.updateWeight(currentSchedule)
     );
