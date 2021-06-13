@@ -1,4 +1,5 @@
 import { CurrentSchedule } from '.';
+import { Period } from '../types';
 import { selectedPreferences } from '../services';
 
 const dayNumber = {
@@ -11,21 +12,26 @@ const dayNumber = {
   friday: 6,
 } as const;
 
+interface PeriodsIds {
+  tutorial: string | null | undefined;
+  lab: string | null | undefined;
+};
+
 export class CourseGroup {
   periods: number[][];
   discarded: boolean;
   weight: number;
-  periodsIds: any;
-  groupNum: any;
+  periodsIds: PeriodsIds;
+  groupNum: string;
 
-  constructor(groupNum: any, group: any) {
+  constructor(groupNum: string, group: Period[]) {
     this.groupNum = groupNum;
-    group = group.filter((period: any) => period !== undefined);
+    group = group.filter((period: Period) => period !== undefined);
     this.periodsIds = {
       tutorial: null,
       lab: null,
     };
-    this.periods = group.map((period: any) => {
+    this.periods = group.map((period: Period) => {
       let dayBase = dayNumber[period.day] * 12;
       if (period.type) {
         this.periodsIds[period.type] = period.id;

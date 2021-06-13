@@ -1,10 +1,10 @@
 import { CourseGroup, Variable } from '../models';
-import { RegistrationData } from '../types';
+import { RegistrationData, CoursesData, PreferencesData, SelectedPreference, SchedulerData } from '../types';
 
-export let selectedPreferences: any;
+export let selectedPreferences: SelectedPreference[];
 let variables: Variable[];
 
-export const setData = (data: RegistrationData) => {
+export const setData = (data: RegistrationData): SchedulerData => {
   selectedPreferences = [];
   variables = [];
   setVariables(data.table);
@@ -12,13 +12,13 @@ export const setData = (data: RegistrationData) => {
   return { variables, selectedPreferences };
 };
 
-const setVariables = (courses: any) => {
+const setVariables = (courses: CoursesData): void => {
   const courseCodes = Object.keys(courses);
   courseCodes.forEach((courseCode) => {
     let course = courses[courseCode];
-    let groups: any = [];
+    let groups: CourseGroup[] = [];
     const groupNumbers = Object.keys(course.groups);
-    groupNumbers.forEach((groupNum: any) => {
+    groupNumbers.forEach((groupNum: string) => {
       let group = course.groups[groupNum];
       const tutorialIds = Object.keys(group.tutorials);
       const labIds = Object.keys(group.labs);
@@ -30,9 +30,9 @@ const setVariables = (courses: any) => {
             {
               ...group.tutorials[tutorialIds[0]],
               id: tutorialIds[0],
-              type: "tutorial",
+              type: 'tutorial',
             },
-            { ...group.labs[labIds[0]], id: labIds[0], type: "lab" },
+            { ...group.labs[labIds[0]], id: labIds[0], type: 'lab' },
           ])
         );
         groups.push(
@@ -42,9 +42,9 @@ const setVariables = (courses: any) => {
             {
               ...group.tutorials[tutorialIds[1]],
               id: tutorialIds[1],
-              type: "tutorial",
+              type: 'tutorial',
             },
-            { ...group.labs[labIds[0]], id: labIds[0], type: "lab" },
+            { ...group.labs[labIds[0]], id: labIds[0], type: 'lab' },
           ])
         );
         groups.push(
@@ -54,9 +54,9 @@ const setVariables = (courses: any) => {
             {
               ...group.tutorials[tutorialIds[0]],
               id: tutorialIds[0],
-              type: "tutorial",
+              type: 'tutorial',
             },
-            { ...group.labs[labIds[1]], id: labIds[1], type: "lab" },
+            { ...group.labs[labIds[1]], id: labIds[1], type: 'lab' },
           ])
         );
         groups.push(
@@ -66,9 +66,9 @@ const setVariables = (courses: any) => {
             {
               ...group.tutorials[tutorialIds[1]],
               id: tutorialIds[1],
-              type: "tutorial",
+              type: 'tutorial',
             },
-            { ...group.labs[labIds[1]], id: labIds[1], type: "lab" },
+            { ...group.labs[labIds[1]], id: labIds[1], type: 'lab' },
           ])
         );
       } else if (course.hasLab) {
@@ -76,14 +76,14 @@ const setVariables = (courses: any) => {
           new CourseGroup(groupNum, [
             group.lectures[0],
             group.lectures[1],
-            { ...group.labs[labIds[0]], id: labIds[0], type: "lab" },
+            { ...group.labs[labIds[0]], id: labIds[0], type: 'lab' },
           ])
         );
         groups.push(
           new CourseGroup(groupNum, [
             group.lectures[0],
             group.lectures[1],
-            { ...group.labs[labIds[1]], id: labIds[1], type: "lab" },
+            { ...group.labs[labIds[1]], id: labIds[1], type: 'lab' },
           ])
         );
       } else if (course.hasTutorial) {
@@ -94,7 +94,7 @@ const setVariables = (courses: any) => {
             {
               ...group.tutorials[tutorialIds[0]],
               id: tutorialIds[0],
-              type: "tutorial",
+              type: 'tutorial',
             },
           ])
         );
@@ -105,7 +105,7 @@ const setVariables = (courses: any) => {
             {
               ...group.tutorials[tutorialIds[1]],
               id: tutorialIds[1],
-              type: "tutorial",
+              type: 'tutorial',
             },
           ])
         );
@@ -119,29 +119,32 @@ const setVariables = (courses: any) => {
   });
 };
 
-const setPreferences = (values: any) => {
+const setPreferences = (values: PreferencesData): void => {
   if (values?.earlyLate) {
     const earlyLate = values.earlyLate.value.toLowerCase();
-    const value = earlyLate == "early" ? "earlyPeriods" : "latePeriods";
+    const value = earlyLate == 'early' ? 'earlyPeriods' : 'latePeriods';
+    const order = values.earlyLate.order;
     selectedPreferences.push({
       constraint: `${value}`,
-      priority: earlyLate.order,
+      priority: order,
     });
   }
   if (values?.gaps) {
     const gaps = values.gaps.value.toLowerCase();
-    const value = gaps == "min" ? "gaps" : "gapsPlus";
+    const value = gaps == 'min' ? 'gaps' : 'gapsPlus';
+    const order = values.gaps.order;
     selectedPreferences.push({
       constraint: `${value}`,
-      priority: gaps.order,
+      priority: order,
     });
   }
   if (values?.minMaxDays) {
     const minMaxDays = values.minMaxDays.value.toLowerCase();
-    const value = minMaxDays == "min" ? "minDays" : "maxDays";
+    const value = minMaxDays == 'min' ? 'minDays' : 'maxDays';
+    const order = values.minMaxDays.order;
     selectedPreferences.push({
       constraint: `${value}`,
-      priority: minMaxDays.order,
+      priority: order,
     });
   }
 };

@@ -1,16 +1,17 @@
-import { Variable, CourseGroup, CurrentSchedule } from './models';
+import { Variable, CurrentSchedule } from './models';
 import { scheduleUpdated, startCSP } from './services';
+import { SchedulerData, RegistredGroup } from './types';
 
 export class Scheduler {
   variables: Variable[];
   currentSchedule: CurrentSchedule;
   nextMethod: string;
 
-  constructor(data: any) {
+  constructor(data: SchedulerData) {
     this.variables = data.variables;
     this.currentSchedule = new CurrentSchedule();
     this.nextMethod = (data.nextMethod) ? data.nextMethod: 'min-values';
-  }
+  };
 
   setNextMethod = (method: string): void => {
     this.nextMethod = method;
@@ -18,12 +19,12 @@ export class Scheduler {
 
   pickVariableToAssign = (): Variable => {
     let min = 100000000;
-    let selectedVariable: Variable = this.variables[0];
-    if (this.nextMethod == "weights") {
+    let selectedVariable = this.variables[0];
+    if (this.nextMethod == 'weights') {
       for (let variable of this.variables) {
-        if (!variable.assignedValue) {
+        if (variable.hasAssignedValue) {
           let availableGroupsCount = variable.domain.filter(
-            (group) => !group.discarded
+            (courseGroup) => !courseGroup.discarded
           ).length;
           if (availableGroupsCount == 1) {
             selectedVariable = variable;
@@ -36,10 +37,10 @@ export class Scheduler {
           }
         }
       }
-    } else if (this.nextMethod == "min-values") {
+    } else if (this.nextMethod == 'min-values') {
       // Picks the variable with the least number of domain values
       this.variables.forEach((variable) => {
-        if (!variable.assignedValue && variable.domain.length < min) {
+        if (variable.hasAssignedValue && variable.domain.length < min) {
           selectedVariable = variable;
           min = variable.domain.length;
         }
@@ -48,11 +49,11 @@ export class Scheduler {
     return selectedVariable;
   };
 
-  forwardChecking = (currentVariable: Variable) => {
-    let discardedValuesWithVariableIndex: any[] = [];
+  forwardChecking = (currentVariable: Variable): ForwardCheckingResult  => {
+    let discardedValuesWithVariableIndex: DiscardedValuesWithVariableIndex[] = [];
     let failed = false;
-    const currentCourseGroups: CourseGroup[] = this.variables
-      .filter((variable) => variable.assignedValue)
+    const currentCourseGroups = this.variables
+      .filter((variable) => variable.hasAssignedValue)
       .map((variable) => {
         return variable.assignedValue;
       });
@@ -62,7 +63,7 @@ export class Scheduler {
       variables: JSON.parse(JSON.stringify(this.variables)),
     });
     this.variables.forEach((variable, index) => {
-      if (!variable.assignedValue) {
+      if (variable.hasAssignedValue) {
         const filteredDomain: number[] = variable.filterDomain(this.currentSchedule);
         variable.updateWeights(this.currentSchedule);
         if (variable.domain.every((courseGroup) => courseGroup.discarded)) {
@@ -77,31 +78,32 @@ export class Scheduler {
     };
   };
 
-  getFinalSchedule = () => {
+  getFinalSchedule = (): RegistredGroup[] => {
     return this.variables.map((variable) => {
       return variable.getRegisteredGroup();
     });
   };
 
-  csp = (): any => {
-    // console.log("---------------------------------------------------------------------------------\n---------------------------------------------------------------------------------")
-    // console.log(currentSchedule, "\n-----")
-    const all_assigned = this.variables.every((variable: Variable) => {
+  csp = (): boolean | void => {
+    // console.log('---------------------------------------------------------------------------------\n---------------------------------------------------------------------------------')
+    // console.log(currentSchedule, '\n-----')
+    const all_assigned = this.variables.every((variable) => {
       return variable.assignedValue;
     });
-    // console.log("ALL ASSIGNED:  ", all_assigned, "\n-----" )
+    // console.log('ALL ASSIGNED:  ', all_assigned, '\n-----' )
     if (all_assigned) {
       return true;
     }
-    const currentVariable: Variable = this.pickVariableToAssign();
-    // console.log("PICKED VARIABLE:  ", currentVariable, "\n-----")
+    const currentVariable = this.pickVariableToAssign();
+    // console.log('PICKED VARIABLE:  ', currentVariable, '\n-----')
     for (let value of currentVariable.domain) {
       if (!value.discarded) {
         currentVariable.assignedValue = value;
+        currentVariable.hasAssignedValue = true;
         const fcOutput = this.forwardChecking(currentVariable);
         // console.log(fcOutput.failed);
-        // console.log("FC OUTPUT:  ", fcOutput, "\n-----")
-        // console.log("VARIABLES AFTER FC:  ", variables, "\n-----")
+        // console.log('FC OUTPUT:  ', fcOutput, '\n-----')
+        // console.log('VARIABLES AFTER FC:  ', variables, '\n-----')
         if (!fcOutput.failed) {
           return this.csp();
         }
@@ -111,11 +113,11 @@ export class Scheduler {
         });
         // backtrack
         // reset current variable assignment
-        currentVariable.assignedValue = null;
+        currentVariable.hasAssignedValue = false;
         // reset discarded values from fcOutput.discardedValues
         fcOutput.discardedValuesWithVariableIndex.forEach(
           (variableDiscardedValues) => {
-            variableDiscardedValues[1].forEach((discardedValueIndex: any) => {
+            variableDiscardedValues[1].forEach((discardedValueIndex: number) => {
               this.variables[variableDiscardedValues[0]].domain[
                 discardedValueIndex
               ].discarded = false;
@@ -126,13 +128,20 @@ export class Scheduler {
     }
   };
 
-  schedule() {
+  schedule = (): RegistredGroup[] => {
     this.csp();
     return this.getFinalSchedule();
-  }
+  };
 
-  // startCSP.subscribe(() => {
-  //   this.csp();
-  // });
 };
 
+// startCSP.subscribe(() => {
+//   this.csp();
+// });
+
+interface ForwardCheckingResult {
+  failed: boolean;
+  discardedValuesWithVariableIndex: DiscardedValuesWithVariableIndex[];
+};
+
+type DiscardedValuesWithVariableIndex = [number, number[]];

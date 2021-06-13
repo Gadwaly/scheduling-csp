@@ -1,36 +1,33 @@
 import { CourseGroup, CurrentSchedule } from '.';
+import { RegistredGroup } from '../types';
 
 export class Variable {
   courseName: string;
   courseCode: string;
-  assignedValue: any;
+  assignedValue: CourseGroup;
+  hasAssignedValue: boolean;
   domain: CourseGroup[];
 
-  constructor(name: string, code: string, domain: any) {
-    this.assignedValue = null;
-    this.domain = domain;
+  constructor(name: string, code: string, domain: CourseGroup[]) {
     this.courseName = name;
+    this.domain = domain;
     this.courseCode = code;
-  }
-
-  pickFromDomain = (): void => {
-    this.assignedValue = this.domain.find((value) => {
-      return !value.discarded;
-    });
-  }
+    this.assignedValue = this.domain[0];
+    this.hasAssignedValue = false;
+  };
 
   filterDomain = (currentSchedule: CurrentSchedule): number[] => {
     let discardedCGroupsIndices: number[] = [];
     this.domain.forEach((courseGroup, index) => {
       if (!courseGroup.discarded) {
         if (courseGroup.clashesWith(currentSchedule)) {
-          courseGroup.discarded = true;
           discardedCGroupsIndices.push(index);
+          courseGroup.discarded = true;
         }
       }
     });
     return discardedCGroupsIndices;
-  }
+  };
 
   updateWeights = (currentSchedule: CurrentSchedule): void => {
     this.domain.forEach((courseGroup) =>
@@ -40,14 +37,14 @@ export class Variable {
     this.domain.sort((cGroup1: CourseGroup, cGroup2: CourseGroup) => {
       return cGroup1.weight >= cGroup2.weight ? 1 : -1;
     });
-  }
+  };
 
-  getRegisteredGroup() {
+  getRegisteredGroup = (): RegistredGroup => {
     return {
       code: this.courseCode,
       group: this.assignedValue.groupNum,
       tutorial: this.assignedValue.periodsIds.tutorial,
       lab: this.assignedValue.periodsIds.lab,
-    };
-  }
-}
+    }
+  };
+};
