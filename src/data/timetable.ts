@@ -1,7 +1,10 @@
-import { CourseGroup, Variable } from "../csp/models";
-import { variables } from "../csp/csp";
+import { CourseGroup, CurrentSchedule, Variable } from "../csp/models";
+import { variables, currentSchedule } from "../csp/csp";
 
 export const setVariables = (courses: any) => {
+  variables.splice(0, variables.length);
+  currentSchedule.schedule = [];
+  currentSchedule.scheduleGroups = [];
   const courseCodes = Object.keys(courses);
   courseCodes.forEach((courseCode) => {
     let course = courses[courseCode];

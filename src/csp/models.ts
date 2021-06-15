@@ -1,8 +1,9 @@
 let selectedPrefernces: any = [];
 
 const setPreferences = (values: any) => {
-  if (values?.earlyLate) {
-    const earlyLate = values.earlyLate.value.toLowerCase();
+  selectedPrefernces = []
+  if (values?.earlyOrLate) {
+    const earlyLate = values.earlyOrLate.value.toLowerCase();
     const value = earlyLate == "early" ? "earlyPeriods" : "latePeriods";
     selectedPrefernces.push({
       constraint: `this.${value}`,
@@ -211,7 +212,9 @@ class CourseGroup {
   }
 
   updateWeight(currentSchedule: CurrentSchedule) {
-    const softConstraints = selectedPrefernces;
+    const softConstraints = selectedPrefernces.map((pref: any) => {
+      return {priority: 10, constraint: eval(pref.constraint)}
+    })
     this.weight = softConstraints.reduce(
       (accumalator: any, constraint: any) => {
         return (
