@@ -1,21 +1,30 @@
+import { ReplaySubject } from 'rxjs';
 import { Variable, CurrentSchedule } from './models';
-import { scheduleUpdated, startCSP } from './services';
-import { SchedulerData, RegistredGroup } from './types';
+import { SchedulerData, RegistredGroup, SelectedPreference, PreferencesData } from './types';
+import { setPreferences } from './services/DataSettingService'
 
 export class Scheduler {
   variables: Variable[];
   currentSchedule: CurrentSchedule;
   nextMethod: string;
+  scheduleUpdated: ReplaySubject<any>;
+  selectedPreferences: SelectedPreference[];
 
   constructor(data: SchedulerData) {
     this.variables = data.variables;
+    this.selectedPreferences = data.selectedPreferences;
     this.currentSchedule = new CurrentSchedule();
     this.nextMethod = (data.nextMethod) ? data.nextMethod: 'min-values';
+    this.scheduleUpdated = new ReplaySubject();
   };
 
   setNextMethod = (method: string): void => {
     this.nextMethod = method;
   };
+
+  setSelectedPreferences = (preferences: PreferencesData) => {
+    this.selectedPreferences = setPreferences(preferences)
+  }
 
   pickVariableToAssign = (): Variable => {
     let min = 100000000;
@@ -30,7 +39,7 @@ export class Scheduler {
             selectedVariable = variable;
             break;
           }
-          variable.updateWeights(this.currentSchedule);
+          variable.updateWeights(this.currentSchedule, this.selectedPreferences);
           if (variable.domain[0].weight < min) {
             selectedVariable = variable;
             min = variable.domain[0].weight;
@@ -58,14 +67,14 @@ export class Scheduler {
         return variable.assignedValue;
       });
     this.currentSchedule.update(currentCourseGroups);
-    scheduleUpdated.next({
+    this.scheduleUpdated.next({
       currentVariable: JSON.parse(JSON.stringify(currentVariable)),
       variables: JSON.parse(JSON.stringify(this.variables)),
     });
     this.variables.forEach((variable, index) => {
       if (!variable.assignedValue) {
         const filteredDomain: number[] = variable.filterDomain(this.currentSchedule);
-        variable.updateWeights(this.currentSchedule);
+        variable.updateWeights(this.currentSchedule, this.selectedPreferences);
         if (variable.domain.every((courseGroup) => courseGroup.discarded)) {
           failed = true;
         }
@@ -106,7 +115,7 @@ export class Scheduler {
         if (!fcOutput.failed) {
           return this.csp();
         }
-        scheduleUpdated.next({
+        this.scheduleUpdated.next({
           currentVariable: JSON.parse(JSON.stringify(currentVariable)),
           variables: JSON.parse(JSON.stringify(this.variables)),
         });
@@ -133,10 +142,6 @@ export class Scheduler {
   };
 
 };
-
-// startCSP.subscribe(() => {
-//   this.csp();
-// });
 
 interface ForwardCheckingResult {
   failed: boolean;

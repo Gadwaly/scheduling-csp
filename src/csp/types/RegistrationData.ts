@@ -32,7 +32,7 @@ export interface PreferencesData {
       instructor: number | string;
     };
   };
-  earlyLate?: {
+  earlyOrLate?: {
     value: EarlyLateValues;
     order: number | string
   };
@@ -50,6 +50,6 @@ export interface PreferencesData {
   };
 };
 
-type EarlyLateValues = 'earyl' | 'late';
+type EarlyLateValues = 'early' | 'late';
 type GapsValues = 'min' | 'max';
 type MinMaxDayesValues = 'min' | 'max';

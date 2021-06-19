@@ -1,5 +1,5 @@
 import { CourseGroup, CurrentSchedule } from '.';
-import { RegistredGroup } from '../types';
+import { RegistredGroup, SelectedPreference } from '../types';
 
 export class Variable {
   courseName: string;
@@ -27,9 +27,9 @@ export class Variable {
     return discardedCGroupsIndices;
   };
 
-  updateWeights = (currentSchedule: CurrentSchedule): void => {
+  updateWeights = (currentSchedule: CurrentSchedule, selectedPreferences: SelectedPreference[]): void => {
     this.domain.forEach((courseGroup) =>
-      courseGroup.updateWeight(currentSchedule)
+      courseGroup.updateWeight(currentSchedule, selectedPreferences)
     );
 
     this.domain.sort((cGroup1: CourseGroup, cGroup2: CourseGroup) => {

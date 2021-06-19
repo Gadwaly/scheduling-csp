@@ -1,18 +1,15 @@
 import { CourseGroup, Variable } from '../models';
 import { RegistrationData, CoursesData, PreferencesData, SelectedPreference, SchedulerData } from '../types';
 
-export let selectedPreferences: SelectedPreference[];
-let variables: Variable[];
 
 export const setData = (data: RegistrationData): SchedulerData => {
-  selectedPreferences = [];
-  variables = [];
-  setVariables(data.table);
-  setPreferences(data.preferences);
+  let variables: Variable[] = setVariables(data.table);
+  let selectedPreferences: SelectedPreference[] = setPreferences(data.preferences);
   return { variables, selectedPreferences };
 };
 
-const setVariables = (courses: CoursesData): void => {
+const setVariables = (courses: CoursesData): Variable[] => {
+  let variables: Variable[] = [];
   const courseCodes = Object.keys(courses);
   courseCodes.forEach((courseCode) => {
     let course = courses[courseCode];
@@ -117,13 +114,15 @@ const setVariables = (courses: CoursesData): void => {
     });
     variables.push(new Variable(course.name, courseCode, groups));
   });
+  return variables;
 };
 
-const setPreferences = (values: PreferencesData): void => {
-  if (values?.earlyLate) {
-    const earlyLate = values.earlyLate.value.toLowerCase();
+export const setPreferences = (values: PreferencesData): SelectedPreference[] => {
+  let selectedPreferences: SelectedPreference[] = [];
+  if (values?.earlyOrLate) {
+    const earlyLate = values.earlyOrLate.value.toLowerCase();
     const value = earlyLate == 'early' ? 'earlyPeriods' : 'latePeriods';
-    const order = values.earlyLate.order;
+    const order = values.earlyOrLate.order;
     selectedPreferences.push({
       constraint: `${value}`,
       priority: order,
@@ -147,4 +146,5 @@ const setPreferences = (values: PreferencesData): void => {
       priority: order,
     });
   }
+  return selectedPreferences
 };
