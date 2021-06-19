@@ -4,16 +4,14 @@ import { RegistredGroup } from '../types';
 export class Variable {
   courseName: string;
   courseCode: string;
-  assignedValue: CourseGroup;
-  hasAssignedValue: boolean;
+  assignedValue: CourseGroup | null;
   domain: CourseGroup[];
 
   constructor(name: string, code: string, domain: CourseGroup[]) {
     this.courseName = name;
     this.domain = domain;
     this.courseCode = code;
-    this.assignedValue = this.domain[0];
-    this.hasAssignedValue = false;
+    this.assignedValue = null;
   };
 
   filterDomain = (currentSchedule: CurrentSchedule): number[] => {

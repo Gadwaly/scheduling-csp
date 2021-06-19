@@ -22,7 +22,7 @@ export class Scheduler {
     let selectedVariable = this.variables[0];
     if (this.nextMethod == 'weights') {
       for (let variable of this.variables) {
-        if (variable.hasAssignedValue) {
+        if (!variable.assignedValue) {
           let availableGroupsCount = variable.domain.filter(
             (courseGroup) => !courseGroup.discarded
           ).length;
@@ -40,7 +40,7 @@ export class Scheduler {
     } else if (this.nextMethod == 'min-values') {
       // Picks the variable with the least number of domain values
       this.variables.forEach((variable) => {
-        if (variable.hasAssignedValue && variable.domain.length < min) {
+        if (!variable.assignedValue && variable.domain.length < min) {
           selectedVariable = variable;
           min = variable.domain.length;
         }
@@ -53,7 +53,7 @@ export class Scheduler {
     let discardedValuesWithVariableIndex: DiscardedValuesWithVariableIndex[] = [];
     let failed = false;
     const currentCourseGroups = this.variables
-      .filter((variable) => variable.hasAssignedValue)
+      .filter((variable) => variable.assignedValue)
       .map((variable) => {
         return variable.assignedValue;
       });
@@ -63,7 +63,7 @@ export class Scheduler {
       variables: JSON.parse(JSON.stringify(this.variables)),
     });
     this.variables.forEach((variable, index) => {
-      if (variable.hasAssignedValue) {
+      if (!variable.assignedValue) {
         const filteredDomain: number[] = variable.filterDomain(this.currentSchedule);
         variable.updateWeights(this.currentSchedule);
         if (variable.domain.every((courseGroup) => courseGroup.discarded)) {
@@ -99,7 +99,6 @@ export class Scheduler {
     for (let value of currentVariable.domain) {
       if (!value.discarded) {
         currentVariable.assignedValue = value;
-        currentVariable.hasAssignedValue = true;
         const fcOutput = this.forwardChecking(currentVariable);
         // console.log(fcOutput.failed);
         // console.log('FC OUTPUT:  ', fcOutput, '\n-----')
@@ -113,7 +112,7 @@ export class Scheduler {
         });
         // backtrack
         // reset current variable assignment
-        currentVariable.hasAssignedValue = false;
+        currentVariable.assignedValue = null;
         // reset discarded values from fcOutput.discardedValues
         fcOutput.discardedValuesWithVariableIndex.forEach(
           (variableDiscardedValues) => {
