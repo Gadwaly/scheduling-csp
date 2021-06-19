@@ -65,9 +65,9 @@ function App() {
   }
 
   const setPreferences = (event: any) => {
-    let selectedPreferencesOptions = Array.from(event.target.selectedOptions).map((option: any) => option.value)
-    let selectedPreferences: PreferencesData;
-    selectedPreferences.earlyLate
+    // let selectedPreferencesOptions = Array.from(event.target.selectedOptions).map((option: any) => option.value)
+    // let selectedPreferences: PreferencesData;
+    // selectedPreferences.earlyLate
     // setSelectedPrefernces(selectedPreferences)
   }
 
