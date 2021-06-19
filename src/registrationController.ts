@@ -1,10 +1,9 @@
-import { setVariables } from "./data/timetable";
-import { setPreferences } from "./csp/models";
-import { csp, currentSchedule, getFinalSchedule } from "./csp/csp";
+import { Scheduler } from './csp/Scheduler';
+import { setData } from './csp/services';
+import { RegistrationData } from './csp/types';
 
-export const register = (data: any) => {
-  setVariables(data.table);
-  setPreferences(data.preferences);
-  csp();
-  return getFinalSchedule();
+export const register = (data: RegistrationData) => {
+  const schedulerData = setData(data);
+  const scheduler = new Scheduler(schedulerData);
+  return scheduler.schedule();
 };
