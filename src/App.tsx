@@ -1,42 +1,56 @@
 import React, { useEffect, useState, useRef } from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { Variable, variables as vrs, setNextMethod } from "./csp/csp";
+//REFACTOR import { Variable, variables as vrs, setNextMethod } from "./csp/csp";
+import { Variable } from './csp/models/Variable'
 import Schedule from "./components/Schedule";
-import { scheduleUpdated, startCSP } from "./csp/service";
-import { fromEvent, interval, from, Observable } from "rxjs";
+import { scheduleUpdated } from "./csp/services/VisualizerService";
+import { fromEvent, interval, from, Observable, ReplaySubject } from "rxjs";
 import { debounce, mergeMap, map } from "rxjs/operators";
 import VariablesView from "./components/VariablesView";
-import { setSelectedPrefernces } from "./csp/models";
+//REFACTOR import { setSelectedPrefernces } from "./csp/models";
+import allCourses from './csp/allCourses.json'
+import { setData } from "./csp/services";
+import { Scheduler } from "./csp/Scheduler";
+import { CoursesData, PreferencesData } from "./csp/types";
 
 function App() {
   const [variables, setVariables] = useState<Variable[]>();
+  const [scheduler, setScheduler] = useState<Scheduler>();
   const [currentVariable, setCurrentVariable] = useState<any>();
   const [cspMoves, setCSPMoves] = useState<any>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(0);
   const [pauseInterval, setPauseInterval] = useState<boolean>(false);
   const [movesSpeed, setMovesSpeed] = useState<number>(1000);
   const [started, setStarted] = useState<boolean>(false);
+  const [scheduleUpdated, setScheduleUpdated] = useState<ReplaySubject<any>>()
+
 
   useEffect(() => {
-    console.log(vrs);
-    scheduleUpdated.subscribe((newVariables: Variable[]) => {
-      cspMoves.push(JSON.parse(JSON.stringify(newVariables)));
-    });
-  }, []);
+    if(!variables){
+      const schedulerData = setData({table: {CC212: allCourses.CC212, CC273: allCourses.CC273} as CoursesData, preferences: {}});
+      setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
+      const schedulerObject = new Scheduler(schedulerData);
+      setScheduleUpdated(schedulerObject.scheduleUpdated)
+      setScheduler(schedulerObject)
+    }
+  }, [])
+
+  useEffect(() => {
+    if(scheduleUpdated){
+      scheduleUpdated.subscribe((newVariables: Variable[]) => {
+        cspMoves.push(JSON.parse(JSON.stringify(newVariables)));
+      });
+    }
+  }, [scheduleUpdated]);
 
   useInterval(() => {
     if (cspMoves[currentMoveIndex] && !pauseInterval) {
-      console.log(cspMoves[currentMoveIndex]);
       setVariables(cspMoves[currentMoveIndex].variables);
       setCurrentVariable(cspMoves[currentMoveIndex].currentVariable);
       setCurrentMoveIndex(currentMoveIndex + 1);
     }
   }, movesSpeed);
-
-  const logOutput = (val: any) => {
-    console.log(val);
-  };
 
   const togglePauseInterval = () => {
     setPauseInterval(!pauseInterval);
@@ -47,18 +61,29 @@ function App() {
   };
 
   const changeNextMethod = (event: any) => {
-    setNextMethod(event.target.value)
+    scheduler.setNextMethod(event.target.value)
   }
 
   const setPreferences = (event: any) => {
-    let selectedPreferences = Array.from(event.target.selectedOptions).map((option: any) => option.value)
-    setSelectedPrefernces(selectedPreferences)
+    // let selectedPreferencesOptions = Array.from(event.target.selectedOptions).map((option: any) => option.value)
+    // let selectedPreferences: PreferencesData;
+    // selectedPreferences.earlyLate
+    // setSelectedPrefernces(selectedPreferences)
   }
 
   const scrollToBottom = () => {
     setTimeout(() => {
       window.scrollTo(0,document.body.scrollHeight);
     }, 1000)
+  }
+
+  const restart = () => {
+    const schedulerData = setData({table: {CC212: allCourses.CC212, CC273: allCourses.CC273} as CoursesData, preferences: {}});
+    setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
+    const schedulerObject = new Scheduler(schedulerData);
+    setScheduleUpdated(schedulerObject.scheduleUpdated)
+    setScheduler(schedulerObject)
+    setStarted(false);
   }
 
   return (
@@ -95,7 +120,7 @@ function App() {
             <div className="action">
               <button
                 onClick={() => {
-                  startCSP.next();
+                  scheduler?.schedule();
                   setStarted(true);
                   scrollToBottom();
                 }}
@@ -106,11 +131,23 @@ function App() {
           </>
         )}
         {started && (
+          <>
           <div className="action">
             <button onClick={togglePauseInterval}>
               {pauseInterval ? "Resume" : "Pause"}
             </button>
           </div>
+          <div className="action">
+              <button
+                onClick={() => {
+                  restart()
+                }}
+              >
+                Restart
+              </button>
+            </div>
+          </>
+          
         )}
         <div className="action">
           <label htmlFor="speeds">
