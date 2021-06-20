@@ -1,5 +1,5 @@
 export * from './RegistrationData';
-export * from './SelectedPreference';
+export * from './SoftConstraint';
 export * from './DayValue';
 export * from './Period';
 export * from './AssignedValue';

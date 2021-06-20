@@ -1,8 +1,8 @@
 import { Variable } from '../models';
-import { SelectedPreference } from '.';
+import { SoftConstraint } from '.';
 
 export interface SchedulerData {
   variables: Variable[];
-  selectedPreferences: SelectedPreference[];
+  softConstraints: SoftConstraint[];
   nextMethod?: string;
 };
