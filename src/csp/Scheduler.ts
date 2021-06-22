@@ -1,5 +1,5 @@
 import { ReplaySubject } from 'rxjs';
-import { Variable, CurrentSchedule } from './models';
+import { Variable, CurrentSchedule, CourseGroup } from './models';
 import { SchedulerData, RegistredGroup, SoftConstraint, PreferencesData } from './types';
 import { setSoftConstraints } from './services'
 
@@ -9,6 +9,7 @@ export class Scheduler {
   nextMethod: string;
   scheduleUpdated: ReplaySubject<any>;
   softConstraints: SoftConstraint[];
+  assignedVariables: Variable[];
 
   constructor(data: SchedulerData) {
     this.variables = data.variables;
@@ -16,6 +17,7 @@ export class Scheduler {
     this.currentSchedule = new CurrentSchedule();
     this.nextMethod = (data.nextMethod) ? data.nextMethod: 'min-values';
     this.scheduleUpdated = new ReplaySubject();
+    this.assignedVariables = [];
   };
 
   setNextMethod = (method: string): void => {
@@ -126,9 +128,8 @@ export class Scheduler {
         fcOutput.discardedValuesWithVariableIndex.forEach(
           (variableDiscardedValues) => {
             variableDiscardedValues[1].forEach((discardedValueIndex: number) => {
-              this.variables[variableDiscardedValues[0]].domain[
-                discardedValueIndex
-              ].discarded = false;
+              this.variables[variableDiscardedValues[0]]
+              .domain[discardedValueIndex].discarded = false;
             });
           }
         );
@@ -136,8 +137,44 @@ export class Scheduler {
     }
   };
 
+  cspWithRevisionAssignedVariables = (): void => {
+    while(this.assignedVariables.length < this.variables.length) {
+      const currentVariable = this.pickVariableToAssign();
+      currentVariable.updateWeights(this.currentSchedule, this.softConstraints);
+      currentVariable.assignedValue = currentVariable.domain[0];
+      this.currentSchedule.update(this.currentCourseGroups());
+      this.assignedVariables.push(currentVariable);
+      if(this.assignedVariables.length > 1) {
+        this.reviseAssignedVariables(currentVariable);
+      }
+    }
+  };
+
+  reviseAssignedVariables = (currentVariable: Variable) => {
+    let variable: Variable;
+    let previousAssignedValue: CourseGroup;
+    while(variable == currentVariable && variable.assignedValue != previousAssignedValue) {
+      variable = this.variables.shift();
+      previousAssignedValue = variable.assignedValue;
+      variable.updateWeights(this.currentSchedule, this.softConstraints);
+      variable.assignedValue = variable.domain[0];
+      this.currentSchedule.update(this.currentCourseGroups());
+      this.variables.push(variable);
+    }
+  };
+
+  private currentCourseGroups = () => {
+    return this.variables .filter((variable) => variable.assignedValue)
+      .map((variable) => variable.assignedValue);
+  };
+  private isAllAssigned = () => {
+    return this.variables.every((variable) => {
+      return variable.assignedValue;
+    });
+  };
+
   schedule = (): RegistredGroup[] => {
-    this.csp();
+    this.cspWithRevisionAssignedVariables();
     return this.getFinalSchedule();
   };
 
