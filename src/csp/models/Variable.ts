@@ -1,5 +1,5 @@
 import { CourseGroup, CurrentSchedule } from '.';
-import { RegistredGroup, SelectedPreference } from '../types';
+import { RegistredGroup, SoftConstraint } from '../types';
 
 export class Variable {
   courseName: string;
@@ -27,9 +27,9 @@ export class Variable {
     return discardedCGroupsIndices;
   };
 
-  updateWeights = (currentSchedule: CurrentSchedule, selectedPreferences: SelectedPreference[]): void => {
+  updateWeights = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
     this.domain.forEach((courseGroup) =>
-      courseGroup.updateWeight(currentSchedule, selectedPreferences)
+      courseGroup.updateWeight(currentSchedule, softConstraints)
     );
 
     this.domain.sort((cGroup1: CourseGroup, cGroup2: CourseGroup) => {

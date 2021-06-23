@@ -1,11 +1,11 @@
 import { CourseGroup, Variable } from '../models';
-import { RegistrationData, CoursesData, PreferencesData, SelectedPreference, SchedulerData } from '../types';
+import { RegistrationData, CoursesData, PreferencesData, SchedulerData, SoftConstraint } from '../types';
 
 
 export const setData = (data: RegistrationData): SchedulerData => {
   let variables: Variable[] = setVariables(data.table);
-  let selectedPreferences: SelectedPreference[] = setPreferences(data.preferences);
-  return { variables, selectedPreferences };
+  let softConstraints: SoftConstraint[] = setSoftConstraints(data.preferences);
+  return { variables, softConstraints };
 };
 
 const setVariables = (courses: CoursesData): Variable[] => {
@@ -117,34 +117,34 @@ const setVariables = (courses: CoursesData): Variable[] => {
   return variables;
 };
 
-export const setPreferences = (values: PreferencesData): SelectedPreference[] => {
-  let selectedPreferences: SelectedPreference[] = [];
+export const setSoftConstraints = (values: PreferencesData): SoftConstraint[] => {
+  let softConstraints: SoftConstraint[] = [];
   if (values?.earlyOrLate) {
     const earlyLate = values.earlyOrLate.value.toLowerCase();
     const value = earlyLate == 'early' ? 'earlyPeriods' : 'latePeriods';
-    const order = values.earlyOrLate.order;
-    selectedPreferences.push({
-      constraint: `${value}`,
+    const order = +values.earlyOrLate.order;
+    softConstraints.push({
+      type: value,
       priority: order,
     });
   }
   if (values?.gaps) {
     const gaps = values.gaps.value.toLowerCase();
     const value = gaps == 'min' ? 'gaps' : 'gapsPlus';
-    const order = values.gaps.order;
-    selectedPreferences.push({
-      constraint: `${value}`,
+    const order = +values.gaps.order;
+    softConstraints.push({
+      type: value,
       priority: order,
     });
   }
   if (values?.minMaxDays) {
     const minMaxDays = values.minMaxDays.value.toLowerCase();
     const value = minMaxDays == 'min' ? 'minDays' : 'maxDays';
-    const order = values.minMaxDays.order;
-    selectedPreferences.push({
-      constraint: `${value}`,
+    const order = +values.minMaxDays.order;
+    softConstraints.push({
+      type: value,
       priority: order,
     });
   }
-  return selectedPreferences
+  return softConstraints;
 };

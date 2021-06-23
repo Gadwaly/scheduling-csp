@@ -1,5 +1,5 @@
 import { CurrentSchedule } from '.';
-import { Period, SelectedPreference } from '../types';
+import { Period, SoftConstraint } from '../types';
 
 const dayNumber = {
   saturday: 0,
@@ -131,16 +131,15 @@ export class CourseGroup {
     });
   };
 
-  updateWeight = (currentSchedule: CurrentSchedule, selectedPreferences: SelectedPreference[]): void => {
-    // const softConstraints = selectedPreferences;
-    const softConstraints = selectedPreferences.map((pref: any) => {
-      return {priority: 10, constraint: eval(`this.${pref.constraint}`)}
-    })
+  updateWeight = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
+    for (let pref of softConstraints) {
+      pref.priority = 10;
+    }
     this.weight = softConstraints.reduce(
-      (accumalator: any, constraint: any) => {
+      (accumalator: number, softConstraint: SoftConstraint) => {
         return (
           accumalator +
-          constraint.priority * constraint.constraint(currentSchedule)
+          softConstraint.priority * this[softConstraint.type](currentSchedule)
         );
       },
       0

@@ -1,18 +1,18 @@
 import { ReplaySubject } from 'rxjs';
 import { Variable, CurrentSchedule } from './models';
-import { SchedulerData, RegistredGroup, SelectedPreference, PreferencesData } from './types';
-import { setPreferences } from './services/DataSettingService'
+import { SchedulerData, RegistredGroup, SoftConstraint, PreferencesData } from './types';
+import { setSoftConstraints } from './services'
 
 export class Scheduler {
   variables: Variable[];
   currentSchedule: CurrentSchedule;
   nextMethod: string;
   scheduleUpdated: ReplaySubject<any>;
-  selectedPreferences: SelectedPreference[];
+  softConstraints: SoftConstraint[];
 
   constructor(data: SchedulerData) {
     this.variables = data.variables;
-    this.selectedPreferences = data.selectedPreferences;
+    this.softConstraints = data.softConstraints;
     this.currentSchedule = new CurrentSchedule();
     this.nextMethod = (data.nextMethod) ? data.nextMethod: 'min-values';
     this.scheduleUpdated = new ReplaySubject();
@@ -22,8 +22,8 @@ export class Scheduler {
     this.nextMethod = method;
   };
 
-  setSelectedPreferences = (preferences: PreferencesData) => {
-    this.selectedPreferences = setPreferences(preferences)
+  setSoftConstraints = (preferences: PreferencesData) => {
+    this.softConstraints = setSoftConstraints(preferences)
   }
 
   pickVariableToAssign = (): Variable => {
@@ -39,7 +39,7 @@ export class Scheduler {
             selectedVariable = variable;
             break;
           }
-          variable.updateWeights(this.currentSchedule, this.selectedPreferences);
+          variable.updateWeights(this.currentSchedule, this.softConstraints);
           if (variable.domain[0].weight < min) {
             selectedVariable = variable;
             min = variable.domain[0].weight;
@@ -74,7 +74,7 @@ export class Scheduler {
     this.variables.forEach((variable, index) => {
       if (!variable.assignedValue) {
         const filteredDomain: number[] = variable.filterDomain(this.currentSchedule);
-        variable.updateWeights(this.currentSchedule, this.selectedPreferences);
+        variable.updateWeights(this.currentSchedule, this.softConstraints);
         if (variable.domain.every((courseGroup) => courseGroup.discarded)) {
           failed = true;
         }
