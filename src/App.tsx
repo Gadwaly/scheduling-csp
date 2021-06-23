@@ -13,6 +13,7 @@ import allCourses from './csp/allCourses.json'
 import { setData } from "./csp/services";
 import { Scheduler } from "./csp/Scheduler";
 import { CoursesData, PreferencesData } from "./csp/types";
+import PreferencesSelector from "./components/PreferencesSelector";
 
 function App() {
   const [variables, setVariables] = useState<Variable[]>();
@@ -24,17 +25,30 @@ function App() {
   const [movesSpeed, setMovesSpeed] = useState<number>(1000);
   const [started, setStarted] = useState<boolean>(false);
   const [scheduleUpdated, setScheduleUpdated] = useState<ReplaySubject<any>>()
+  const [preferences, setPreferences] = useState<any>()
+
+
+  // useEffect(() => {
+  //   if(!variables){
+  //     const schedulerData = setData({table: {CC212: allCourses.CC212, CC273: allCourses.CC273} as CoursesData, preferences: {}});
+  //     setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
+  //     const schedulerObject = new Scheduler(schedulerData);
+  //     setScheduleUpdated(schedulerObject.scheduleUpdated)
+  //     setScheduler(schedulerObject)
+  //   }
+  // }, [])
 
 
   useEffect(() => {
-    if(!variables){
-      const schedulerData = setData({table: {CC212: allCourses.CC212, CC273: allCourses.CC273} as CoursesData, preferences: {}});
+    if(started){
+      const schedulerData = setData(preferences);
       setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
       const schedulerObject = new Scheduler(schedulerData);
       setScheduleUpdated(schedulerObject.scheduleUpdated)
       setScheduler(schedulerObject)
+      schedulerObject.schedule()
     }
-  }, [])
+  }, [started])
 
   useEffect(() => {
     if(scheduleUpdated){
@@ -64,13 +78,6 @@ function App() {
     scheduler.setNextMethod(event.target.value)
   }
 
-  const setPreferences = (event: any) => {
-    // let selectedPreferencesOptions = Array.from(event.target.selectedOptions).map((option: any) => option.value)
-    // let selectedPreferences: PreferencesData;
-    // selectedPreferences.earlyLate
-    // setSelectedPrefernces(selectedPreferences)
-  }
-
   const scrollToBottom = () => {
     setTimeout(() => {
       window.scrollTo(0,document.body.scrollHeight);
@@ -86,23 +93,65 @@ function App() {
     setStarted(false);
   }
 
+  const startCSP = () => {
+    // scheduler?.schedule();
+    setStarted(true);
+    scrollToBottom();
+  }
+
+  const buildPreferences = (courses, daysOff, earlyLate, minMaxDays, gaps) => {
+    const tableArray = courses.map(course => {
+      return {[course.code] : allCourses[course.code]}
+    })
+    const table = Object.assign({}, ...tableArray);
+    const preferencesObject = {
+      "earlyOrLate": {
+        "value": earlyLate[0],
+        "order": earlyLate[1]
+      },
+      "offDays": {
+        "value": daysOff[0],
+        "order": daysOff[1]
+      },
+      "gaps": {
+        "value": gaps[0],
+        "order": gaps[1]
+      },
+      "minOrMaxDays": {
+        "value": minMaxDays[0],
+        "order": minMaxDays[1]
+      }
+    }
+    setPreferences({
+      table,
+      preferences: preferencesObject
+    })
+    console.log({
+      table,
+      preferences: preferencesObject
+    })
+  }
+
   return (
     <div className="App">
+       {!started && 
+        <PreferencesSelector buildPreferences={buildPreferences} />
+       }
       <div className="actions-bar">
         {!started && (
           <>
-          <div className="action">
-          <label htmlFor="preferences">Select Preferences:</label>
+          {/* <div className="action"> */}
+          {/* <label htmlFor="preferences">Select Preferences:</label> */}
 
-            <select name="preferences" id="preferences" onChange={setPreferences} multiple>
+            {/* <select name="preferences" id="preferences" onChange={setPreferences} multiple>
               <option value="minDays">Min Days</option>
               <option value="maxDays">Max Days</option>
               <option value="earlyPeriods">Early Periods</option>
               <option value="latePeriods">Late Periods</option>
               <option value="gaps">Min Gaps</option>
               <option value="gapsPlus">Max Gaps</option>
-            </select>
-          </div>
+            </select> */}
+          {/* </div> */}
             <div className="action">
               <label htmlFor="speeds">
                 Next Variable Heuristic
@@ -119,11 +168,7 @@ function App() {
             </div>
             <div className="action">
               <button
-                onClick={() => {
-                  scheduler?.schedule();
-                  setStarted(true);
-                  scrollToBottom();
-                }}
+                onClick={startCSP}
               >
                 Start
               </button>
