@@ -1,0 +1,104 @@
+#registrationContainer {
+	padding: 1rem;
+}
+
+#coursesSelectorContainer {
+	width: 100%;
+	display: flex;
+	justify-content: space-around;
+	margin-bottom: 3rem;
+}
+
+#coursesSelector {
+	width: 65%;
+}
+
+#coursesSelectorButton {
+	width: 15%;
+	background-color: black;
+	color: white;
+	height: 3.9rem;
+}
+
+#coursesCards {
+	position: relative;
+	display: flex;
+	flex-wrap: wrap;
+	margin-bottom: 2rem;
+}
+
+#preferences {
+	width: 35%;
+	margin-left: 1rem;
+	margin-right: 1rem;
+}
+#daysOffSelector {
+	margin-bottom: 2rem;
+}
+
+#earlyLate {
+	margin-bottom: 2rem;
+}
+
+#generateContainer {
+	text-align: center;
+}
+
+#generateContainer button {
+	width: 20%;
+	background-color: black;
+	color: white;
+	margin-bottom: 10rem;
+}
+
+#creditHours {
+	position: absolute;
+	font-size: larger;
+	top: -1.3rem;
+	left: 1rem;
+	background-color: black;
+	color: white;
+	display: inline-block;
+	padding: 0.25em 0.4em;
+	font-size: 125%;
+	font-weight: 700;
+	line-height: 1;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: baseline;
+	border-radius: 0.25rem;
+}
+
+.tags {
+    list-style: none;
+    margin: 0;
+    overflow: hidden; 
+    padding: 0;
+  }
+  
+  .tags li {
+    float: left; 
+  }
+  
+  .tag {
+    background: #eee;
+    border-radius: 3px 0 0 3px;
+    display: inline-block;
+    height: 26px;
+    line-height: 26px;
+    padding: 0 20px 0 23px;
+    position: relative;
+    margin: 0 10px 10px 0;
+    text-decoration: none;
+  }
+  
+  .tag:hover {
+    background-color:  black;
+    color: white;
+  }
+
+.selectedTag{
+    background-color:  black;
+    color: white;
+    border-left-color:  black;
+}

@@ -34,3 +34,7 @@
   justify-content: space-around;
   height: 300px;
 }
+
+.hidden-preferences{
+  display: none;
+}
