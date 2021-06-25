@@ -65,7 +65,7 @@ const PreferencesSelector = (props) => {
           id={styles.coursesSelector}
           isMulti
           closeMenuOnSelect={false}
-          options={dummyCourses}
+          options={props.availableCourses}
           getOptionLabel={(option) => `${option?.name}`}
           getOptionValue={(option) => `${option?.code}`}
           placeholder={"Select Courses"}

@@ -14,6 +14,7 @@ import { setData } from "./csp/services";
 import { Scheduler } from "./csp/Scheduler";
 import { CoursesData, PreferencesData } from "./csp/types";
 import PreferencesSelector from "./components/PreferencesSelector";
+import { formatCourseGroups } from './visualizer_utils' 
 
 function App() {
   const [variables, setVariables] = useState<Variable[]>();
@@ -26,29 +27,40 @@ function App() {
   const [started, setStarted] = useState<boolean>(false);
   const [scheduleUpdated, setScheduleUpdated] = useState<ReplaySubject<any>>()
   const [preferences, setPreferences] = useState<any>()
+  const [nextMethod, setNextMethod] = useState<string>("min-values")
+  const [availableCourses, setAvailableCourses] = useState<any>([])
+  const [preferencesExist, setPreferencesExist] = useState<boolean>(true)
 
+  
+  useEffect(() => {
+    if(availableCourses.length == 0){
+      setAvailableCourses(
+				formatCourseGroups(allCourses)
+			);
+    }
+  }, [])
 
-  // useEffect(() => {
-  //   if(!variables){
-  //     const schedulerData = setData({table: {CC212: allCourses.CC212, CC273: allCourses.CC273} as CoursesData, preferences: {}});
-  //     setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
-  //     const schedulerObject = new Scheduler(schedulerData);
-  //     setScheduleUpdated(schedulerObject.scheduleUpdated)
-  //     setScheduler(schedulerObject)
-  //   }
-  // }, [])
+  useEffect(() => {
+    console.log(availableCourses)
+  }, [availableCourses])
 
 
   useEffect(() => {
     if(started){
-      const schedulerData = setData(preferences);
-      setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
-      const schedulerObject = new Scheduler(schedulerData);
-      setScheduleUpdated(schedulerObject.scheduleUpdated)
-      setScheduler(schedulerObject)
-      schedulerObject.schedule()
+      if(!scheduler){
+        const schedulerData = setData(preferences);
+        setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
+        const schedulerObject = new Scheduler(schedulerData);
+        setScheduleUpdated(schedulerObject.scheduleUpdated)
+        setScheduler(schedulerObject)
+        schedulerObject.schedule()
+      }else{
+        scheduler.schedule()
+      }
     }
   }, [started])
+
+
 
   useEffect(() => {
     if(scheduleUpdated){
@@ -75,7 +87,7 @@ function App() {
   };
 
   const changeNextMethod = (event: any) => {
-    scheduler.setNextMethod(event.target.value)
+    setNextMethod(event.target.value)
   }
 
   const scrollToBottom = () => {
@@ -85,16 +97,28 @@ function App() {
   }
 
   const restart = () => {
-    const schedulerData = setData({table: {CC212: allCourses.CC212, CC273: allCourses.CC273} as CoursesData, preferences: {}});
+    setStarted(false);
+    const schedulerData = setData(preferences);
     setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
     const schedulerObject = new Scheduler(schedulerData);
     setScheduleUpdated(schedulerObject.scheduleUpdated)
     setScheduler(schedulerObject)
-    setStarted(false);
   }
 
+  const clearCourses = () => {
+    setVariables(null)
+    setScheduler(null)
+    setStarted(false);
+    setPreferences(null)
+    availableCourses.forEach((course) => {
+      course.selectedInstructor = null; 
+    })
+    reloadPreferences()
+  }
+
+
+
   const startCSP = () => {
-    // scheduler?.schedule();
     setStarted(true);
     scrollToBottom();
   }
@@ -105,22 +129,24 @@ function App() {
     })
     const table = Object.assign({}, ...tableArray);
     const preferencesObject = {
-      "earlyOrLate": {
-        "value": earlyLate[0],
-        "order": earlyLate[1]
-      },
-      "offDays": {
-        "value": daysOff[0],
-        "order": daysOff[1]
-      },
-      "gaps": {
-        "value": gaps[0],
-        "order": gaps[1]
-      },
-      "minOrMaxDays": {
-        "value": minMaxDays[0],
-        "order": minMaxDays[1]
-      }
+      ...(earlyLate[0] && {
+        earlyOrLate: {
+          value: earlyLate[0],
+          order: earlyLate[1],
+        },
+      }),
+      ...(daysOff[0].length > 0 && {
+        offDays: {
+          value: daysOff[0].map((dayOff) => dayOff.value),
+          order: daysOff[1],
+        },
+      }),
+      ...(gaps[0] && {
+        gaps: {
+          value: gaps[0],
+          order: gaps[1],
+        },
+      })
     }
     setPreferences({
       table,
@@ -132,26 +158,23 @@ function App() {
     })
   }
 
+  const reloadPreferences = () => {
+    setPreferencesExist(false)
+    setTimeout(() => {
+      setPreferencesExist(true)
+    }, 500)
+  }
+
   return (
     <div className="App">
-       {!started && 
-        <PreferencesSelector buildPreferences={buildPreferences} />
+       {preferencesExist && 
+        <div className={started ? 'hidden-preferences' : null}>
+          <PreferencesSelector availableCourses={availableCourses} buildPreferences={buildPreferences} />
+        </div>
        }
       <div className="actions-bar">
         {!started && (
           <>
-          {/* <div className="action"> */}
-          {/* <label htmlFor="preferences">Select Preferences:</label> */}
-
-            {/* <select name="preferences" id="preferences" onChange={setPreferences} multiple>
-              <option value="minDays">Min Days</option>
-              <option value="maxDays">Max Days</option>
-              <option value="earlyPeriods">Early Periods</option>
-              <option value="latePeriods">Late Periods</option>
-              <option value="gaps">Min Gaps</option>
-              <option value="gapsPlus">Max Gaps</option>
-            </select> */}
-          {/* </div> */}
             <div className="action">
               <label htmlFor="speeds">
                 Next Variable Heuristic
@@ -189,6 +212,15 @@ function App() {
                 }}
               >
                 Restart
+              </button>
+            </div>
+            <div className="action">
+              <button
+                onClick={() => {
+                  clearCourses()
+                }}
+              >
+                Clear Courses
               </button>
             </div>
           </>
