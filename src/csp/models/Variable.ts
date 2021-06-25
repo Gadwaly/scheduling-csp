@@ -6,25 +6,44 @@ export class Variable {
   courseCode: string;
   assignedValue: CourseGroup | null;
   domain: CourseGroup[];
+  assignedValueClashes: CourseGroup[];
 
   constructor(name: string, code: string, domain: CourseGroup[]) {
     this.courseName = name;
     this.domain = domain;
     this.courseCode = code;
     this.assignedValue = null;
+    this.assignedValueClashes = [];
   };
 
-  filterDomain = (currentSchedule: CurrentSchedule): number[] => {
-    let discardedCGroupsIndices: number[] = [];
-    this.domain.forEach((courseGroup, index) => {
-      if (!courseGroup.discarded) {
-        if (courseGroup.clashesWith(currentSchedule)) {
-          discardedCGroupsIndices.push(index);
-          courseGroup.discarded = true;
-        }
+  setAssigendValuesClashesWith = (filterdDomain: CourseGroup[]) => {
+    filterdDomain.forEach((value) => value.incrementDiscardingCounter());
+    this.assignedValueClashes = filterdDomain;
+  }
+
+  addAssignedValuesClashesWith = (filterdDomain: CourseGroup[]) => {
+    this.assignedValueClashes.push(...filterdDomain);
+    filterdDomain.forEach((value) => value.incrementDiscardingCounter());
+  }
+
+  resetAssignedValue = () => {
+    this.assignedValue = null;
+    this.clearAssignedValuesClashesWith();
+  }
+
+  clearAssignedValuesClashesWith = () => {
+    this.assignedValueClashes.forEach((value) => value.decrementDiscardingCounter());
+    this.assignedValueClashes = [];
+  }
+
+  filterDomain = (currentSchedule: CurrentSchedule): CourseGroup[] => {
+    let discardedCourseGroups: CourseGroup[] = [];
+    this.domain.forEach((courseGroup) => {
+      if (!currentSchedule.scheduleGroups.includes(courseGroup) && courseGroup.clashesWith(currentSchedule)) {
+        discardedCourseGroups.push(courseGroup);
       }
     });
-    return discardedCGroupsIndices;
+    return discardedCourseGroups;
   };
 
   updateWeights = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
@@ -33,9 +52,19 @@ export class Variable {
     );
 
     this.domain.sort((cGroup1: CourseGroup, cGroup2: CourseGroup) => {
-      return cGroup1.weight >= cGroup2.weight ? 1 : -1;
+      return cGroup1.weight - cGroup2.weight;
     });
   };
+
+  test = (group: CourseGroup): number => {
+    return group.discarded() ? 1 : -1;
+  }
+
+  hasEmptyDomain = (): boolean => {
+    return this.domain.every((courseGroup) => courseGroup.discarded());
+  };
+
+  hasAssignedValue = (): boolean => this.assignedValue != null;
 
   getRegisteredGroup = (): RegistredGroup => {
     return {

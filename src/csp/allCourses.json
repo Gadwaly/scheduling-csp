@@ -1822,40 +1822,6 @@
             "to":8
           }
         }
-      },
-      "4":{
-        "instructor":"27",
-        "lectures":[
-          {
-            "day":"sunday",
-            "from":7,
-            "to":8
-          },
-          {
-            "day":"wednesday",
-            "from":9,
-            "to":10
-          }
-        ],
-        "labs":{
-          "223":{
-            "day":"wednesday",
-            "from":7,
-            "to":8
-          }
-        },
-        "tutorials":{
-          "225":{
-            "day":"thursday",
-            "from":3,
-            "to":3
-          },
-          "226":{
-            "day":"thursday",
-            "from":4,
-            "to":4
-          }
-        }
       }
     }
   },

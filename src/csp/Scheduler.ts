@@ -28,65 +28,10 @@ export class Scheduler {
     this.softConstraints = setSoftConstraints(preferences)
   }
 
-  pickVariableToAssign = (): Variable => {
-    let min = 100000000;
-    let selectedVariable = this.variables[0];
-    if (this.nextMethod == 'weights') {
-      for (let variable of this.variables) {
-        if (!variable.assignedValue) {
-          let availableGroupsCount = variable.domain.filter(
-            (courseGroup) => !courseGroup.discarded
-          ).length;
-          if (availableGroupsCount == 1) {
-            selectedVariable = variable;
-            break;
-          }
-          variable.updateWeights(this.currentSchedule, this.softConstraints);
-          if (variable.domain[0].weight < min) {
-            selectedVariable = variable;
-            min = variable.domain[0].weight;
-          }
-        }
-      }
-    } else if (this.nextMethod == 'min-values') {
-      // Picks the variable with the least number of domain values
-      this.variables.forEach((variable) => {
-        if (!variable.assignedValue && variable.domain.length < min) {
-          selectedVariable = variable;
-          min = variable.domain.length;
-        }
-      });
-    }
-    return selectedVariable;
-  };
-
-  forwardChecking = (currentVariable: Variable): ForwardCheckingResult  => {
-    let discardedValuesWithVariableIndex: DiscardedValuesWithVariableIndex[] = [];
-    let failed = false;
-    const currentCourseGroups = this.variables
-      .filter((variable) => variable.assignedValue)
-      .map((variable) => {
-        return variable.assignedValue;
-      });
-    this.currentSchedule.update(currentCourseGroups);
-    this.scheduleUpdated.next({
-      currentVariable: JSON.parse(JSON.stringify(currentVariable)),
-      variables: JSON.parse(JSON.stringify(this.variables)),
-    });
-    this.variables.forEach((variable, index) => {
-      if (!variable.assignedValue) {
-        const filteredDomain: number[] = variable.filterDomain(this.currentSchedule);
-        variable.updateWeights(this.currentSchedule, this.softConstraints);
-        if (variable.domain.every((courseGroup) => courseGroup.discarded)) {
-          failed = true;
-        }
-        discardedValuesWithVariableIndex.push([index, filteredDomain]);
-      }
-    });
-    return {
-      failed,
-      discardedValuesWithVariableIndex,
-    };
+  schedule = (): RegistredGroup[] | void => {
+    this.csp();
+    this.improveAssignedValues();
+    return this.getFinalSchedule();
   };
 
   getFinalSchedule = (): RegistredGroup[] => {
@@ -95,89 +40,134 @@ export class Scheduler {
     });
   };
 
-  csp = (): boolean | void => {
-    // console.log('---------------------------------------------------------------------------------\n---------------------------------------------------------------------------------')
-    // console.log(currentSchedule, '\n-----')
-    const all_assigned = this.variables.every((variable) => {
-      return variable.assignedValue;
-    });
-    // console.log('ALL ASSIGNED:  ', all_assigned, '\n-----' )
-    if (all_assigned) {
-      return true;
-    }
-    const currentVariable = this.pickVariableToAssign();
-    // console.log('PICKED VARIABLE:  ', currentVariable, '\n-----')
+  csp = (): void => {
+    const all_assigned = this.variables.every((variable) => variable.hasAssignedValue());
+    if (all_assigned) return;
+    const currentVariable = this.pickVariable();
     for (let value of currentVariable.domain) {
-      if (!value.discarded) {
+      if (!value.discarded()) {
         currentVariable.assignedValue = value;
         const fcOutput = this.forwardChecking(currentVariable);
-        // console.log(fcOutput.failed);
-        // console.log('FC OUTPUT:  ', fcOutput, '\n-----')
-        // console.log('VARIABLES AFTER FC:  ', variables, '\n-----')
-        if (!fcOutput.failed) {
-          return this.csp();
-        }
-        this.scheduleUpdated.next({
-          currentVariable: JSON.parse(JSON.stringify(currentVariable)),
-          variables: JSON.parse(JSON.stringify(this.variables)),
-        });
+        console.log("CourseCode = " + currentVariable.courseCode, fcOutput);
+        if (!fcOutput) return this.csp();
+        this.updateVisualizer(currentVariable);
         // backtrack
         // reset current variable assignment
-        currentVariable.assignedValue = null;
-        // reset discarded values from fcOutput.discardedValues
-        fcOutput.discardedValuesWithVariableIndex.forEach(
-          (variableDiscardedValues) => {
-            variableDiscardedValues[1].forEach((discardedValueIndex: number) => {
-              this.variables[variableDiscardedValues[0]]
-              .domain[discardedValueIndex].discarded = false;
-            });
+        currentVariable.resetAssignedValue();
+      }
+    }
+  };
+
+  forwardChecking = (currentVariable: Variable): boolean  => {
+    let failed = false;
+    this.updateCurrentSchedule(currentVariable);
+    this.variables.forEach((variable) => {
+      if (variable != currentVariable) {
+        const filteredDomain = variable.filterDomain(this.currentSchedule);
+      currentVariable.addAssignedValuesClashesWith(filteredDomain);
+        if (!variable.hasAssignedValue()) {
+          variable.updateWeights(this.currentSchedule, this.softConstraints);
+          if (variable.hasEmptyDomain()) {
+            failed = true;
           }
-        );
+        }
       }
-    }
-  };
-
-  cspWithRevisionAssignedVariables = (): void => {
-    while(this.assignedVariables.length < this.variables.length) {
-      const currentVariable = this.pickVariableToAssign();
-      currentVariable.updateWeights(this.currentSchedule, this.softConstraints);
-      currentVariable.assignedValue = currentVariable.domain[0];
-      this.currentSchedule.update(this.currentCourseGroups());
-      this.assignedVariables.push(currentVariable);
-      if(this.assignedVariables.length > 1) {
-        this.reviseAssignedVariables(currentVariable);
-      }
-    }
-  };
-
-  reviseAssignedVariables = (currentVariable: Variable) => {
-    let variable: Variable;
-    let previousAssignedValue: CourseGroup;
-    while(variable == currentVariable && variable.assignedValue != previousAssignedValue) {
-      variable = this.variables.shift();
-      previousAssignedValue = variable.assignedValue;
-      variable.updateWeights(this.currentSchedule, this.softConstraints);
-      variable.assignedValue = variable.domain[0];
-      this.currentSchedule.update(this.currentCourseGroups());
-      this.variables.push(variable);
-    }
-  };
-
-  private currentCourseGroups = () => {
-    return this.variables .filter((variable) => variable.assignedValue)
-      .map((variable) => variable.assignedValue);
-  };
-  private isAllAssigned = () => {
-    return this.variables.every((variable) => {
-      return variable.assignedValue;
     });
+    return failed;
   };
 
-  schedule = (): RegistredGroup[] => {
-    this.cspWithRevisionAssignedVariables();
-    return this.getFinalSchedule();
+  improveAssignedValues = () => {
+    console.log('HERE');
+    let variablesNotChanged = 0;
+    while(this.variables.length != variablesNotChanged) {
+      variablesNotChanged = 0;
+      for (let variable of this.variables) {
+        console.log('Loop On Variables');
+        variable.updateWeights(this.currentSchedule, this.softConstraints);
+        for(let value of variable.domain) {
+          if(!value.discarded()) {
+            if (value.weight < variable.assignedValue.weight) {
+              variable.resetAssignedValue();
+              variable.assignedValue = value;
+              this.updateCurrentSchedule(variable);
+              let assignedValueClashes: CourseGroup[] = []
+              this.variables.forEach((v) => {
+                const filteredDomain = v.filterDomain(this.currentSchedule);
+                assignedValueClashes.push(...filteredDomain);
+              });
+              variable.setAssigendValuesClashesWith(assignedValueClashes);
+              this.updateVisualizer(variable);
+            } else {
+              variablesNotChanged++;
+              break;
+            }
+          }
+        }
+      }
+    }
   };
 
+  pickVariable = (): Variable => {
+    switch(this.nextMethod) {
+      case 'weights':
+        return this.pickWithWeights();
+      case 'min-values':
+        return this.pickWithMinValues();
+    }
+  };
+
+  pickWithWeights = (): Variable => {
+    let min = Number.MAX_SAFE_INTEGER;
+    let selectedVariable: Variable;
+    for (let variable of this.variables) {
+      if (!variable.assignedValue) {
+        let availableGroupsCount = variable.domain
+        .filter((courseGroup) => !courseGroup.discarded()).length;
+        if (availableGroupsCount == 1) {
+          selectedVariable = variable;
+          break;
+        }
+        variable.updateWeights(this.currentSchedule, this.softConstraints);
+        if (variable.domain[0].weight < min) {
+          selectedVariable = variable;
+          min = variable.domain[0].weight;
+        }
+      }
+    }
+    return selectedVariable;
+  };
+
+  pickWithMinValues = (): Variable => {
+    let min = Number.MAX_SAFE_INTEGER;
+    let selectedVariable = this.variables[0];
+    // Picks the variable with the least number of domain values
+    this.variables.forEach((variable) => {
+      if (!variable.assignedValue && variable.domain.length < min) {
+        selectedVariable = variable;
+        min = variable.domain.length;
+      }
+    });
+    return selectedVariable;
+  };
+
+
+  private currentAssignedValues = () => {
+    return this.variables
+    .filter((variable) => variable.hasAssignedValue())
+    .map((variable) => variable.assignedValue);
+  };
+
+  private updateCurrentSchedule = (currentVariable: Variable): void => {
+    this.currentSchedule.update(this.currentAssignedValues());
+    this.updateVisualizer(currentVariable);
+  }
+
+  private updateVisualizer = (currentVariable: Variable) => {
+    this.scheduleUpdated.next({
+      currentVariable: JSON.parse(JSON.stringify(currentVariable)),
+      variables: JSON.parse(JSON.stringify(this.variables)),
+    });
+  }
 };
 
 interface ForwardCheckingResult {

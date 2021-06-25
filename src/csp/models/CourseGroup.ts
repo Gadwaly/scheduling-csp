@@ -18,10 +18,10 @@ interface PeriodsIds {
 
 export class CourseGroup {
   periods: number[][];
-  discarded: boolean;
   weight: number;
   periodsIds: PeriodsIds;
   groupNum: string;
+  discardingCounter: number;
 
   constructor(groupNum: string, group: Period[]) {
     this.groupNum = groupNum;
@@ -37,9 +37,21 @@ export class CourseGroup {
       }
       return [dayBase + (period.from - 1), dayBase + (period.to - 1)];
     });
-    this.discarded = false;
+    this.discardingCounter = 0;
     this.weight = 0;
   };
+
+  incrementDiscardingCounter = (): void => {
+    this.discardingCounter++;
+  };
+
+  decrementDiscardingCounter = (): void => {
+    this.discardingCounter--;
+  };
+
+  discarded = (): boolean => {
+    return this.discardingCounter != 0;
+  }
 
   minDays = (currentSchedule: CurrentSchedule): number => {
     let addedDaysCount = 0;
