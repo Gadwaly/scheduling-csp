@@ -51,7 +51,7 @@ function Periods({
   return (
     <div
       className={
-        group.discarded
+        group.discardingCounter != 0
           ? "periods_container discarded"
           : isAssigned
           ? "periods_container assigned"
