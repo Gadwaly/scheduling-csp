@@ -1,27 +1,25 @@
 import { ReplaySubject } from 'rxjs';
 import { Variable, CurrentSchedule, CourseGroup } from './models';
 import { SchedulerData, RegistredGroup, SoftConstraint, PreferencesData } from './types';
-import { setSoftConstraints } from './services'
+import { getVariablePicker, setSoftConstraints, VariablePicker, VariablePickerData } from './services'
 
 export class Scheduler {
   variables: Variable[];
   currentSchedule: CurrentSchedule;
-  nextMethod: string;
   scheduleUpdated: ReplaySubject<any>;
   softConstraints: SoftConstraint[];
-  assignedVariables: Variable[];
+  variablePicker: VariablePicker;
 
   constructor(data: SchedulerData) {
     this.variables = data.variables;
     this.softConstraints = data.softConstraints;
     this.currentSchedule = new CurrentSchedule();
-    this.nextMethod = (data.nextMethod) ? data.nextMethod: 'min-values';
     this.scheduleUpdated = new ReplaySubject();
-    this.assignedVariables = [];
+    this.setVariablePickingMethod(data.nextMethod);
   };
 
-  setNextMethod = (method: string): void => {
-    this.nextMethod = method;
+  setVariablePickingMethod = (method = 'min-values'): void => {
+    this.variablePicker = getVariablePicker(method, this.variablePickerData());
   };
 
   setSoftConstraints = (preferences: PreferencesData) => {
@@ -40,6 +38,10 @@ export class Scheduler {
     });
   };
 
+  pickVariable = (): Variable => {
+    return this.variablePicker.pick();
+  };
+
   csp = (): void => {
     const all_assigned = this.variables.every((variable) => variable.hasAssignedValue());
     if (all_assigned) return;
@@ -48,11 +50,8 @@ export class Scheduler {
       if (!value.discarded()) {
         currentVariable.assignedValue = value;
         const fcOutput = this.forwardChecking(currentVariable);
-        console.log("CourseCode = " + currentVariable.courseCode, fcOutput);
         if (!fcOutput) return this.csp();
         this.updateVisualizer(currentVariable);
-        // backtrack
-        // reset current variable assignment
         currentVariable.resetAssignedValue();
       }
     }
@@ -77,12 +76,10 @@ export class Scheduler {
   };
 
   improveAssignedValues = () => {
-    console.log('HERE');
     let variablesNotChanged = 0;
     while(this.variables.length != variablesNotChanged) {
       variablesNotChanged = 0;
       for (let variable of this.variables) {
-        console.log('Loop On Variables');
         variable.updateWeights(this.currentSchedule, this.softConstraints);
         for(let value of variable.domain) {
           if(!value.discarded()) {
@@ -107,49 +104,10 @@ export class Scheduler {
     }
   };
 
-  pickVariable = (): Variable => {
-    switch(this.nextMethod) {
-      case 'weights':
-        return this.pickWithWeights();
-      case 'min-values':
-        return this.pickWithMinValues();
-    }
+  private updateCurrentSchedule = (currentVariable: Variable): void => {
+    this.currentSchedule.update(this.currentAssignedValues());
+    this.updateVisualizer(currentVariable);
   };
-
-  pickWithWeights = (): Variable => {
-    let min = Number.MAX_SAFE_INTEGER;
-    let selectedVariable: Variable;
-    for (let variable of this.variables) {
-      if (!variable.assignedValue) {
-        let availableGroupsCount = variable.domain
-        .filter((courseGroup) => !courseGroup.discarded()).length;
-        if (availableGroupsCount == 1) {
-          selectedVariable = variable;
-          break;
-        }
-        variable.updateWeights(this.currentSchedule, this.softConstraints);
-        if (variable.domain[0].weight < min) {
-          selectedVariable = variable;
-          min = variable.domain[0].weight;
-        }
-      }
-    }
-    return selectedVariable;
-  };
-
-  pickWithMinValues = (): Variable => {
-    let min = Number.MAX_SAFE_INTEGER;
-    let selectedVariable = this.variables[0];
-    // Picks the variable with the least number of domain values
-    this.variables.forEach((variable) => {
-      if (!variable.assignedValue && variable.domain.length < min) {
-        selectedVariable = variable;
-        min = variable.domain.length;
-      }
-    });
-    return selectedVariable;
-  };
-
 
   private currentAssignedValues = () => {
     return this.variables
@@ -157,22 +115,18 @@ export class Scheduler {
     .map((variable) => variable.assignedValue);
   };
 
-  private updateCurrentSchedule = (currentVariable: Variable): void => {
-    this.currentSchedule.update(this.currentAssignedValues());
-    this.updateVisualizer(currentVariable);
-  }
-
   private updateVisualizer = (currentVariable: Variable) => {
     this.scheduleUpdated.next({
       currentVariable: JSON.parse(JSON.stringify(currentVariable)),
       variables: JSON.parse(JSON.stringify(this.variables)),
     });
-  }
-};
+  };
 
-interface ForwardCheckingResult {
-  failed: boolean;
-  discardedValuesWithVariableIndex: DiscardedValuesWithVariableIndex[];
+  private variablePickerData = (): VariablePickerData => {
+    return {
+      variables: this.variables,
+      currentSchedule: this.currentSchedule,
+      softConstraints: this.softConstraints
+    }
+  };
 };
-
-type DiscardedValuesWithVariableIndex = [number, number[]];
