@@ -27,7 +27,7 @@ function App() {
   const [started, setStarted] = useState<boolean>(false);
   const [scheduleUpdated, setScheduleUpdated] = useState<ReplaySubject<any>>()
   const [preferences, setPreferences] = useState<any>()
-  const [nextMethod, setNextMethod] = useState<string>("min-values")
+  const [variablePickingMethod, setVariablePickingMethod] = useState<string>("min-values")
   const [availableCourses, setAvailableCourses] = useState<any>([])
   const [preferencesExist, setPreferencesExist] = useState<boolean>(true)
 
@@ -51,6 +51,7 @@ function App() {
         const schedulerData = setData(preferences);
         setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
         const schedulerObject = new Scheduler(schedulerData);
+        schedulerObject.setVariablePickingMethod(variablePickingMethod)
         setScheduleUpdated(schedulerObject.scheduleUpdated)
         setScheduler(schedulerObject)
         schedulerObject.schedule()
@@ -86,8 +87,12 @@ function App() {
     setMovesSpeed(event.target.value * 1);
   };
 
-  const changeNextMethod = (event: any) => {
-    setNextMethod(event.target.value)
+  const changeVariablePickingMethod = (event: any) => {
+    const method = event.target.value;
+    setVariablePickingMethod(method)
+    if(scheduler) {
+      scheduler.setVariablePickingMethod(method);
+    }
   }
 
   const scrollToBottom = () => {
@@ -101,6 +106,7 @@ function App() {
     const schedulerData = setData(preferences);
     setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
     const schedulerObject = new Scheduler(schedulerData);
+    schedulerObject.setVariablePickingMethod(variablePickingMethod)
     setScheduleUpdated(schedulerObject.scheduleUpdated)
     setScheduler(schedulerObject)
   }
@@ -177,10 +183,11 @@ function App() {
           <>
             <div className="action">
               <label htmlFor="speeds">
-                Next Variable Heuristic
+                Variable Picking Heuristic
                 <select
                   defaultValue="min-values"
-                  onChange={changeNextMethod}
+                  onChange={changeVariablePickingMethod}
+                  value={variablePickingMethod}
                   name="next_variable_method"
                   id="variable-methods"
                 >
