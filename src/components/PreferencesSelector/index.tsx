@@ -13,13 +13,13 @@ const days = [
   { label: "Tue", value: "tuesday" },
   { label: "Wed", value: "wednesday" },
   { label: "Thu", value: "thursday" },
-  { label: "Fri", value: "friday" },
 ];
 
 const PreferencesSelector = (props) => {
   const [myCourses, setMyCourses] = useState<Course[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<any[]>([]);
   const [totalCreditHours, setTotalCreditHours] = useState<number>(0);
+  const [courseInstructor, setCourseInstructor] = useState<{}>(null);
   const [daysOff, setDaysOff] = useState<any[]>([]);
   const [earlyLate, setEarlyLate] = useState<any>(null);
   const [minMaxDays, setMinMaxDays] = useState<any>([]);
@@ -29,10 +29,27 @@ const PreferencesSelector = (props) => {
   const [priorityMinMaxDays, setPriorityMinMaxDays] = useState<number>(0);
   const [priorityGaps, setPriorityGaps] = useState<number>(0);
 
-
   useEffect(() => {
-	  props.buildPreferences(myCourses, [daysOff.map((day) => day.value), priorityDaysOff], [earlyLate?.value, priorityEarlyLate], [minMaxDays?.value, priorityMinMaxDays], [gaps?.value, priorityGaps])
-  }, [myCourses, daysOff, earlyLate, minMaxDays, gaps, priorityDaysOff, priorityEarlyLate, priorityMinMaxDays, priorityGaps])
+    props.buildPreferences(
+      myCourses,
+      [daysOff.map((day) => day.value), priorityDaysOff],
+      [earlyLate?.value, priorityEarlyLate],
+      [minMaxDays?.value, priorityMinMaxDays],
+      [gaps?.value, priorityGaps],
+      [courseInstructor, 0]
+    );
+  }, [
+    myCourses,
+    daysOff,
+    earlyLate,
+    minMaxDays,
+    gaps,
+    priorityDaysOff,
+    priorityEarlyLate,
+    priorityMinMaxDays,
+    priorityGaps,
+    courseInstructor,
+  ]);
 
   const addCourses = () => {
     setMyCourses(myCourses.concat(selectedCourses));
@@ -40,14 +57,27 @@ const PreferencesSelector = (props) => {
   };
 
   const setSelectedInstructor = (course: Course, instructorId: number) => {
-    course.selectedInstructor = instructorId;
+    let _courseInstructor = { ...courseInstructor };
+
+    if (instructorId !== undefined)
+      _courseInstructor[course.name] = instructorId;
+    else if (_courseInstructor[course.name]) {
+      delete _courseInstructor[course.name];
+      if (!Object.keys(_courseInstructor).length) _courseInstructor = null;
+    }
+
+    setCourseInstructor(_courseInstructor);
   };
 
   const filterOption = (option: any, inputValue: any) => {
-    if (myCourses.map((course) => course.code).includes(option.value)) {
-      return false;
+    if (
+      !myCourses.map((course) => course.code).includes(option.value) &&
+      option.label.toLowerCase().includes(inputValue.toLowerCase())
+    ) {
+      return true;
     }
-    return true;
+
+    return false;
   };
 
   const removeCourse = (id: number) => {
@@ -113,8 +143,8 @@ const PreferencesSelector = (props) => {
               isClearable={true}
               isMulti={false}
               options={[
-                { label: "Minimum Days", value: "min_days" },
-                { label: "Maximum Days", value: "max_days" },
+                { label: "Minimum Days", value: "min" },
+                { label: "Maximum Days", value: "max" },
               ]}
               placeholder={"Select Min Max Days"}
               classNamePrefix="min-max-days"

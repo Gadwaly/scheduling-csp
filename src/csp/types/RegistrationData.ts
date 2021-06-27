@@ -1,9 +1,9 @@
-import { DayValue, Period } from '.';
+import { DayValue, Period } from ".";
 
 export interface RegistrationData {
   table: CoursesData;
   preferences: PreferencesData;
-};
+}
 
 export interface CoursesData {
   [key: string]: {
@@ -24,7 +24,7 @@ export interface CoursesData {
       };
     };
   };
-};
+}
 
 export interface PreferencesData {
   courses?: {
@@ -34,22 +34,26 @@ export interface PreferencesData {
   };
   earlyOrLate?: {
     value: EarlyLateValues;
-    order: number | string
+    order: number | string;
   };
-  offDays?: {
+  daysOff?: {
     value: DayValue[];
-    order: number | string
+    order: number | string;
   };
   gaps?: {
     value: GapsValues;
-    order: number | string
+    order: number | string;
   };
   minMaxDays?: {
     value: MinMaxDayesValues;
-    order: number | string
+    order: number | string;
   };
-};
+  courseInstructor?: {
+    value: {} | null;
+    order: number | string;
+  };
+}
 
-type EarlyLateValues = 'early' | 'late';
-type GapsValues = 'min' | 'max';
-type MinMaxDayesValues = 'min' | 'max';
+type EarlyLateValues = "early" | "late";
+type GapsValues = "min" | "max";
+type MinMaxDayesValues = "min" | "max";
