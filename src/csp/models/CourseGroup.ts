@@ -141,10 +141,10 @@ export class CourseGroup {
 
   daysOff = (
     currentSchedule: CurrentSchedule,
-    days: number[],
+    days: string[],
     internalWieght = 3
   ) => {
-    console.log(days);
+    console.log("daysoff", days);
     const busyDays = new Array(6).fill(false);
     for (let i = 0; i < 6; i++) {
       for (let j = i * 12; j < i * 12 + 12; j++) {
@@ -160,7 +160,8 @@ export class CourseGroup {
       for (let j = 0; j < this.periods.length; j++) {
         const period = this.periods[j];
         let dayIndex = Math.floor(period[0] / 12);
-        if (dayIndex === days[i] && !busyDays[i]) {
+        console.log(dayNumber[days[i]]);
+        if (dayIndex === dayNumber[days[i]] && !busyDays[i]) {
           hits++;
           break;
         }
@@ -175,7 +176,7 @@ export class CourseGroup {
     instructors: any,
     internalWieght = 2
   ) => {
-    console.log(instructors);
+    console.log("instructors", this.instructor, this.course, instructors);
     if (
       !this.instructor ||
       !instructors[this.course] ||
@@ -200,7 +201,6 @@ export class CourseGroup {
     currentSchedule: CurrentSchedule,
     softConstraints: SoftConstraint[]
   ): void => {
-    console.log(softConstraints);
     for (let pref of softConstraints) {
       pref.priority = 10;
     }
