@@ -47,11 +47,12 @@ function App() {
         const schedulerData = setData(preferences);
         setVariables(JSON.parse(JSON.stringify(schedulerData.variables)));
         const schedulerObject = new Scheduler(schedulerData);
-        setScheduleUpdated(schedulerObject.scheduleUpdated);
-        setScheduler(schedulerObject);
-        schedulerObject.schedule();
-      } else {
-        scheduler.schedule();
+        schedulerObject.setNextMethod(nextMethod)
+        setScheduleUpdated(schedulerObject.scheduleUpdated)
+        setScheduler(schedulerObject)
+        schedulerObject.schedule()
+      }else{
+        scheduler.schedule()
       }
     }
   }, [started]);
@@ -95,9 +96,10 @@ function App() {
     const schedulerData = setData(preferences);
     setVariables(JSON.parse(JSON.stringify(schedulerData.variables)));
     const schedulerObject = new Scheduler(schedulerData);
-    setScheduleUpdated(schedulerObject.scheduleUpdated);
-    setScheduler(schedulerObject);
-  };
+    schedulerObject.setNextMethod(nextMethod)
+    setScheduleUpdated(schedulerObject.scheduleUpdated)
+    setScheduler(schedulerObject)
+  }
 
   const clearCourses = () => {
     setVariables(null);
@@ -195,6 +197,7 @@ function App() {
                 <select
                   defaultValue="min-values"
                   onChange={changeNextMethod}
+                  value={nextMethod}
                   name="next_variable_method"
                   id="variable-methods"
                 >
