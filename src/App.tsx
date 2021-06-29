@@ -2,19 +2,19 @@ import React, { useEffect, useState, useRef } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 //REFACTOR import { Variable, variables as vrs, setNextMethod } from "./csp/csp";
-import { Variable } from './csp/models/Variable'
+import { Variable } from "./csp/models/Variable";
 import Schedule from "./components/Schedule";
 import { scheduleUpdated } from "./csp/services/VisualizerService";
 import { fromEvent, interval, from, Observable, ReplaySubject } from "rxjs";
 import { debounce, mergeMap, map } from "rxjs/operators";
 import VariablesView from "./components/VariablesView";
 //REFACTOR import { setSelectedPrefernces } from "./csp/models";
-import allCourses from './csp/allCourses.json'
+import allCourses from "./csp/allCourses.json";
 import { setData } from "./csp/services";
 import { Scheduler } from "./csp/Scheduler";
 import { CoursesData, PreferencesData } from "./csp/types";
 import PreferencesSelector from "./components/PreferencesSelector";
-import { formatCourseGroups } from './visualizer_utils' 
+import { formatCourseGroups } from "./visualizer_utils";
 
 function App() {
   const [variables, setVariables] = useState<Variable[]>();
@@ -31,25 +31,21 @@ function App() {
   const [availableCourses, setAvailableCourses] = useState<any>([])
   const [preferencesExist, setPreferencesExist] = useState<boolean>(true)
 
-  
   useEffect(() => {
-    if(availableCourses.length == 0){
-      setAvailableCourses(
-				formatCourseGroups(allCourses)
-			);
+    if (availableCourses.length == 0) {
+      setAvailableCourses(formatCourseGroups(allCourses));
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    console.log(availableCourses)
-  }, [availableCourses])
-
+    console.log(availableCourses);
+  }, [availableCourses]);
 
   useEffect(() => {
-    if(started){
-      if(!scheduler){
+    if (started) {
+      if (!scheduler) {
         const schedulerData = setData(preferences);
-        setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
+        setVariables(JSON.parse(JSON.stringify(schedulerData.variables)));
         const schedulerObject = new Scheduler(schedulerData);
         schedulerObject.setVariablePickingMethod(variablePickingMethod)
         setScheduleUpdated(schedulerObject.scheduleUpdated)
@@ -59,12 +55,10 @@ function App() {
         scheduler.schedule()
       }
     }
-  }, [started])
-
-
+  }, [started]);
 
   useEffect(() => {
-    if(scheduleUpdated){
+    if (scheduleUpdated) {
       scheduleUpdated.subscribe((newVariables: Variable[]) => {
         cspMoves.push(JSON.parse(JSON.stringify(newVariables)));
       });
@@ -97,14 +91,14 @@ function App() {
 
   const scrollToBottom = () => {
     setTimeout(() => {
-      window.scrollTo(0,document.body.scrollHeight);
-    }, 1000)
-  }
+      window.scrollTo(0, document.body.scrollHeight);
+    }, 1000);
+  };
 
   const restart = () => {
     setStarted(false);
     const schedulerData = setData(preferences);
-    setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
+    setVariables(JSON.parse(JSON.stringify(schedulerData.variables)));
     const schedulerObject = new Scheduler(schedulerData);
     schedulerObject.setVariablePickingMethod(variablePickingMethod)
     setScheduleUpdated(schedulerObject.scheduleUpdated)
@@ -112,27 +106,32 @@ function App() {
   }
 
   const clearCourses = () => {
-    setVariables(null)
-    setScheduler(null)
+    setVariables(null);
+    setScheduler(null);
     setStarted(false);
-    setPreferences(null)
+    setPreferences(null);
     availableCourses.forEach((course) => {
-      course.selectedInstructor = null; 
-    })
-    reloadPreferences()
-  }
-
-
+      course.selectedInstructor = null;
+    });
+    reloadPreferences();
+  };
 
   const startCSP = () => {
     setStarted(true);
     scrollToBottom();
-  }
+  };
 
-  const buildPreferences = (courses, daysOff, earlyLate, minMaxDays, gaps) => {
-    const tableArray = courses.map(course => {
-      return {[course.code] : allCourses[course.code]}
-    })
+  const buildPreferences = (
+    courses,
+    daysOff,
+    earlyLate,
+    minMaxDays,
+    gaps,
+    coursesInstructors
+  ) => {
+    const tableArray = courses.map((course) => {
+      return { [course.code]: allCourses[course.code] };
+    });
     const table = Object.assign({}, ...tableArray);
     const preferencesObject = {
       ...(earlyLate[0] && {
@@ -141,9 +140,15 @@ function App() {
           order: earlyLate[1],
         },
       }),
+      ...(minMaxDays[0] && {
+        minMaxDays: {
+          value: minMaxDays[0],
+          order: minMaxDays[1],
+        },
+      }),
       ...(daysOff[0].length > 0 && {
-        offDays: {
-          value: daysOff[0].map((dayOff) => dayOff.value),
+        daysOff: {
+          value: daysOff[0].map((dayOff) => dayOff),
           order: daysOff[1],
         },
       }),
@@ -152,32 +157,41 @@ function App() {
           value: gaps[0],
           order: gaps[1],
         },
-      })
-    }
+      }),
+      ...(coursesInstructors[0] && {
+        courseInstructor: {
+          value: coursesInstructors[0],
+          order: coursesInstructors[1],
+        },
+      }),
+    };
     setPreferences({
       table,
-      preferences: preferencesObject
-    })
+      preferences: preferencesObject,
+    });
     console.log({
       table,
-      preferences: preferencesObject
-    })
-  }
+      preferences: preferencesObject,
+    });
+  };
 
   const reloadPreferences = () => {
-    setPreferencesExist(false)
+    setPreferencesExist(false);
     setTimeout(() => {
-      setPreferencesExist(true)
-    }, 500)
-  }
+      setPreferencesExist(true);
+    }, 500);
+  };
 
   return (
     <div className="App">
-       {preferencesExist && 
-        <div className={started ? 'hidden-preferences' : null}>
-          <PreferencesSelector availableCourses={availableCourses} buildPreferences={buildPreferences} />
+      {preferencesExist && (
+        <div className={started ? "hidden-preferences" : null}>
+          <PreferencesSelector
+            availableCourses={availableCourses}
+            buildPreferences={buildPreferences}
+          />
         </div>
-       }
+      )}
       <div className="actions-bar">
         {!started && (
           <>
@@ -197,25 +211,21 @@ function App() {
               </label>
             </div>
             <div className="action">
-              <button
-                onClick={startCSP}
-              >
-                Start
-              </button>
+              <button onClick={startCSP}>Start</button>
             </div>
           </>
         )}
         {started && (
           <>
-          <div className="action">
-            <button onClick={togglePauseInterval}>
-              {pauseInterval ? "Resume" : "Pause"}
-            </button>
-          </div>
-          <div className="action">
+            <div className="action">
+              <button onClick={togglePauseInterval}>
+                {pauseInterval ? "Resume" : "Pause"}
+              </button>
+            </div>
+            <div className="action">
               <button
                 onClick={() => {
-                  restart()
+                  restart();
                 }}
               >
                 Restart
@@ -224,14 +234,13 @@ function App() {
             <div className="action">
               <button
                 onClick={() => {
-                  clearCourses()
+                  clearCourses();
                 }}
               >
                 Clear Courses
               </button>
             </div>
           </>
-          
         )}
         <div className="action">
           <label htmlFor="speeds">
@@ -248,7 +257,6 @@ function App() {
             </select>
           </label>
         </div>
-        
       </div>
       {variables && (
         <div className="schedule-variables-container">

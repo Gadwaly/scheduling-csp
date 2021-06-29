@@ -1,5 +1,5 @@
-import { CurrentSchedule } from '.';
-import { Period, SoftConstraint } from '../types';
+import { CurrentSchedule } from ".";
+import { Period, SoftConstraint } from "../types";
 
 const dayNumber = {
   saturday: 0,
@@ -14,7 +14,7 @@ const dayNumber = {
 interface PeriodsIds {
   tutorial: string | null | undefined;
   lab: string | null | undefined;
-};
+}
 
 export class CourseGroup {
   periods: number[][];
@@ -22,8 +22,15 @@ export class CourseGroup {
   periodsIds: PeriodsIds;
   groupNum: string;
   discardingCounter: number;
+  instructor!: string;
+  course!: string;
 
-  constructor(groupNum: string, group: Period[]) {
+  constructor(
+    groupNum: string,
+    group: Period[],
+    instructor: string,
+    course: string
+  ) {
     this.groupNum = groupNum;
     group = group.filter((period: Period) => period !== undefined);
     this.periodsIds = {
@@ -39,7 +46,9 @@ export class CourseGroup {
     });
     this.discardingCounter = 0;
     this.weight = 0;
-  };
+    this.course = course;
+    this.instructor = instructor;
+  }
 
   incrementDiscardingCounter = (): void => {
     this.discardingCounter++;
@@ -51,9 +60,9 @@ export class CourseGroup {
 
   discarded = (): boolean => {
     return this.discardingCounter != 0;
-  }
+  };
 
-  minDays = (currentSchedule: CurrentSchedule): number => {
+  minDays = (currentSchedule: CurrentSchedule, internalWieght = 1) => {
     let addedDaysCount = 0;
     const busyDays = new Array(6).fill(false);
     for (let i = 0; i < 6; i++) {
@@ -72,15 +81,14 @@ export class CourseGroup {
         busyDays[dayIndex] = true;
       }
     });
-
-    return addedDaysCount / 6;
+    return addedDaysCount * internalWieght;
   };
 
-  maxDays = (currentSchedule: CurrentSchedule): number => {
-    return 1 - this.minDays(currentSchedule);
+  maxDays = (currentSchedule: CurrentSchedule, internalWieght = 1) => {
+    return -this.minDays(currentSchedule) * internalWieght;
   };
 
-  earlyPeriods = (_currentSchedule: CurrentSchedule): number => {
+  earlyPeriods = (currentSchedule: CurrentSchedule, internalWieght = 1 / 5) => {
     let earliness = 0;
     this.periods.forEach((period) => {
       const day = Math.floor(period[0] / 12),
@@ -89,14 +97,14 @@ export class CourseGroup {
       earliness += from;
     });
 
-    return earliness / (12 * this.periods.length);
+    return earliness * internalWieght;
   };
 
-  latePeriods = (currentSchedule: CurrentSchedule): number => {
-    return 1 - this.earlyPeriods(currentSchedule);
+  latePeriods = (currentSchedule: CurrentSchedule, internalWieght = 1 / 5) => {
+    return -this.earlyPeriods(currentSchedule) * internalWieght;
   };
 
-  gaps = (currentSchedule: CurrentSchedule): number => {
+  gaps = (currentSchedule: CurrentSchedule, internalWieght = 1 / 3) => {
     let gaps = 0;
     let schedule = [...currentSchedule.schedule];
     let periodDays: number[] = [];
@@ -124,13 +132,59 @@ export class CourseGroup {
 
       for (let i = firstPeriod; i < lastPeriod; i++) if (!schedule[i]) gaps++;
     });
-    return gaps / (11 * this.periods.length);
+    return gaps * internalWieght;
   };
 
-  gapsPlus = (currentSchedule: CurrentSchedule): number => {
-    return 1 - this.gaps(currentSchedule);
+  gapsPlus = (currentSchedule: CurrentSchedule, internalWieght = 1 / 3) => {
+    return -this.gaps(currentSchedule) * internalWieght;
   };
 
+  daysOff = (
+    currentSchedule: CurrentSchedule,
+    days: string[],
+    internalWieght = 3
+  ) => {
+    console.log("daysoff", days);
+    const busyDays = new Array(6).fill(false);
+    for (let i = 0; i < 6; i++) {
+      for (let j = i * 12; j < i * 12 + 12; j++) {
+        if (currentSchedule.schedule[j]) {
+          busyDays[i] = true;
+          break;
+        }
+      }
+    }
+
+    let hits = 0;
+    for (let i = 0; i < days.length; i++) {
+      for (let j = 0; j < this.periods.length; j++) {
+        const period = this.periods[j];
+        let dayIndex = Math.floor(period[0] / 12);
+        console.log(dayNumber[days[i]]);
+        if (dayIndex === dayNumber[days[i]] && !busyDays[i]) {
+          hits++;
+          break;
+        }
+      }
+    }
+
+    return hits * internalWieght;
+  };
+
+  courseInstructor = (
+    currentSchedule: CurrentSchedule,
+    instructors: any,
+    internalWieght = 2
+  ) => {
+    console.log("instructors", this.instructor, this.course, instructors);
+    if (
+      !this.instructor ||
+      !instructors[this.course] ||
+      this.instructor === instructors[this.course]
+    )
+      return 0;
+    return 1 * internalWieght;
+  };
 
   clashesWith = (currentSchedule: CurrentSchedule): boolean => {
     return this.periods.some((period) => {
@@ -143,7 +197,10 @@ export class CourseGroup {
     });
   };
 
-  updateWeight = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
+  updateWeight = (
+    currentSchedule: CurrentSchedule,
+    softConstraints: SoftConstraint[]
+  ): void => {
     for (let pref of softConstraints) {
       pref.priority = 10;
     }
@@ -151,10 +208,11 @@ export class CourseGroup {
       (accumalator: number, softConstraint: SoftConstraint) => {
         return (
           accumalator +
-          softConstraint.priority * this[softConstraint.type](currentSchedule)
+          softConstraint.priority *
+            this[softConstraint.type](currentSchedule, softConstraint.param)
         );
       },
       0
     );
   };
-};
+}
