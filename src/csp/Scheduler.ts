@@ -15,7 +15,7 @@ export class Scheduler {
     this.softConstraints = data.softConstraints;
     this.currentSchedule = new CurrentSchedule();
     this.scheduleUpdated = new ReplaySubject();
-    this.setVariablePickingMethod(data.nextMethod);
+    this.setVariablePickingMethod(data.variablePickingMethod);
   };
 
   setVariablePickingMethod = (method = 'min-values'): void => {
@@ -36,10 +36,6 @@ export class Scheduler {
     return this.variables.map((variable) => {
       return variable.getRegisteredGroup();
     });
-  };
-
-  pickVariable = (): Variable => {
-    return this.variablePicker.pick();
   };
 
   csp = (): void => {
@@ -97,6 +93,9 @@ export class Scheduler {
     }
   };
 
+  private pickVariable = (): Variable => {
+    return this.variablePicker.pick();
+  };
   private updateCurrentSchedule = (currentVariable: Variable): void => {
     this.currentSchedule.update(this.currentAssignedValues());
     this.updateVisualizer(currentVariable);

@@ -7,10 +7,10 @@ import {
   SoftConstraint,
 } from "../types";
 
-export const setData = (data: RegistrationData): SchedulerData => {
+export const setData = (data: RegistrationData, variablePickingMethod?: string): SchedulerData => {
   let variables: Variable[] = setVariables(data.table);
   let softConstraints: SoftConstraint[] = setSoftConstraints(data.preferences);
-  return { variables, softConstraints };
+  return { variables, softConstraints, variablePickingMethod };
 };
 
 const setVariables = (courses: CoursesData): Variable[] => {
