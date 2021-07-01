@@ -57,7 +57,7 @@ export class WeightBasedVariablePicker extends VariablePicker {
 class MinValuesBasedVariablePicker extends VariablePicker {
   pick = (): Variable => {
     let min = Number.MAX_SAFE_INTEGER;
-    let selectedVariable = this.variables[0];
+    let selectedVariable: Variable;
     this.variables.forEach((variable) => {
       if (!variable.hasAssignedValue() && variable.domain.length < min) {
         selectedVariable = variable;
