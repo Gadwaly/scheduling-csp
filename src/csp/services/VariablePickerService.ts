@@ -13,6 +13,8 @@ export const getVariablePicker = (pickingMethod: string, data: VariablePickerDat
       return new WeightBasedVariablePicker(data);
     case 'min-values':
       return new MinValuesBasedVariablePicker(data);
+    case 'average-domain-weights':
+      return new AverageDomainWeightsVariablePicker(data);
   }
 };
 
@@ -30,19 +32,19 @@ export abstract class VariablePicker {
   abstract pick(): Variable;
 };
 
-class WeightBasedVariablePicker extends VariablePicker {
+export class WeightBasedVariablePicker extends VariablePicker {
   pick = (): Variable => {
     let min = Number.MAX_SAFE_INTEGER;
     let selectedVariable: Variable;
     for (let variable of this.variables) {
-      if (!variable.assignedValue) {
+      if (!variable.hasAssignedValue()) {
         let availableGroupsCount = variable.domain
         .filter((courseGroup) => !courseGroup.discarded()).length;
         if (availableGroupsCount == 1) {
           selectedVariable = variable;
           break;
         }
-        variable.updateWeights(this.currentSchedule, this.softConstraints);
+        variable.updateDomainWeights(this.currentSchedule, this.softConstraints);
         if (variable.domain[0].weight < min) {
           selectedVariable = variable;
           min = variable.domain[0].weight;
@@ -58,11 +60,33 @@ class MinValuesBasedVariablePicker extends VariablePicker {
     let min = Number.MAX_SAFE_INTEGER;
     let selectedVariable = this.variables[0];
     this.variables.forEach((variable) => {
-      if (!variable.assignedValue && variable.domain.length < min) {
+      if (!variable.hasAssignedValue() && variable.domain.length < min) {
         selectedVariable = variable;
         min = variable.domain.length;
       }
     });
     return selectedVariable;
   };
+};
+
+class AverageDomainWeightsVariablePicker extends VariablePicker {
+  pick = (): Variable => {
+    let min = Number.MAX_SAFE_INTEGER;
+    let selectedVariable: Variable;
+    for (let variable of this.variables) {
+      if (!variable.hasAssignedValue()) {
+        variable.updateDomainWeights(this.currentSchedule, this.softConstraints);
+        let averageDomainWeights = variable.domain.reduce(
+          (accumalator, courseGroup) => {
+            return accumalator + courseGroup.weight
+          },
+        0 ) / variable.domain.length;
+        if (averageDomainWeights < min) {
+          min = averageDomainWeights;
+          selectedVariable = variable;
+        }
+      }
+    }
+    return selectedVariable;
+  }
 };
