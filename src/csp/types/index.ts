@@ -5,3 +5,4 @@ export * from './Period';
 export * from './AssignedValue';
 export * from './SchedulerData';
 export * from './RegisteredGroup';
+export * from './dayNumber';
