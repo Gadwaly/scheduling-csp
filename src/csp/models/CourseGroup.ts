@@ -58,7 +58,7 @@ export class CourseGroup {
     this.discardingCounter--;
   };
 
-  discarded = (): boolean => this.discardingCounter != 0;
+  discarded = (): boolean => this.discardingCounter !== 0;
 
   clashesWith = (currentSchedule: CurrentSchedule): boolean => {
     return this.periods.some((period) => {

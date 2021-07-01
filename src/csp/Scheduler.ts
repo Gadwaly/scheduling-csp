@@ -1,7 +1,7 @@
 import { ReplaySubject } from 'rxjs';
-import { Variable, CurrentSchedule, CourseGroup } from './models';
-import { SchedulerData, RegistredGroup, SoftConstraint, PreferencesData } from './types';
-import { getVariablePicker, setSoftConstraints, VariablePicker, VariablePickerData } from './services'
+import { Variable, CurrentSchedule } from './models';
+import { SchedulerData, RegistredGroup, SoftConstraint } from './types';
+import { getVariablePicker, VariablePicker, VariablePickerData } from './services'
 
 export class Scheduler {
   variables: Variable[];
@@ -64,6 +64,7 @@ export class Scheduler {
       if (variable != currentVariable) {
         const filteredDomain = variable.filterDomain(this.currentSchedule);
       currentVariable.addAssignedValuesClashesWith(filteredDomain);
+      if (variable !== currentVariable) {
         if (!variable.hasAssignedValue()) {
           variable.updateWeights(this.currentSchedule, this.softConstraints);
           if (variable.hasEmptyDomain()) {

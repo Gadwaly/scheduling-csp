@@ -26,7 +26,7 @@ function App() {
   const [preferencesExist, setPreferencesExist] = useState<boolean>(true)
 
   useEffect(() => {
-    if (availableCourses.length == 0) {
+    if (availableCourses.length === 0) {
       setAvailableCourses(formatCourseGroups(allCourses));
     }
   }, []);

@@ -173,7 +173,7 @@ export const setSoftConstraints = (
   let softConstraints: SoftConstraint[] = [];
   if (values?.earlyOrLate) {
     const earlyLate = values.earlyOrLate.value.toLowerCase();
-    const value = earlyLate == "early" ? "earlyPeriods" : "latePeriods";
+    const value = earlyLate === "early" ? "earlyPeriods" : "latePeriods";
     const order = +values.earlyOrLate.order;
     softConstraints.push({
       type: value,
@@ -182,7 +182,7 @@ export const setSoftConstraints = (
   }
   if (values?.gaps) {
     const gaps = values.gaps.value.toLowerCase();
-    const value = gaps == "min" ? "gaps" : "gapsPlus";
+    const value = gaps === "min" ? "gaps" : "gapsPlus";
     const order = +values.gaps.order;
     softConstraints.push({
       type: value,
@@ -191,7 +191,7 @@ export const setSoftConstraints = (
   }
   if (values?.minMaxDays) {
     const minMaxDays = values.minMaxDays.value.toLowerCase();
-    const value = minMaxDays == "min" ? "minDays" : "maxDays";
+    const value = minMaxDays === "min" ? "minDays" : "maxDays";
     const order = +values.minMaxDays.order;
     softConstraints.push({
       type: value,
