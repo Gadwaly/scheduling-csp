@@ -43,6 +43,8 @@ export class Variable {
     return this.domain.every((courseGroup) => courseGroup.discarded());
   };
 
+  availableDomainGroups = (): CourseGroup[] => this.domain.filter((group) => !group.discarded());
+
   hasAssignedValue = (): boolean => this.assignedValue != null;
 
   getRegisteredGroup = (): RegistredGroup => {

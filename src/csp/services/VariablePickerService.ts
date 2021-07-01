@@ -38,8 +38,7 @@ export class WeightBasedVariablePicker extends VariablePicker {
     let selectedVariable: Variable;
     for (let variable of this.variables) {
       if (!variable.hasAssignedValue()) {
-        let availableGroupsCount = variable.domain
-        .filter((courseGroup) => !courseGroup.discarded()).length;
+        let availableGroupsCount = variable.availableDomainGroups().length;
         if (availableGroupsCount === 1) {
           selectedVariable = variable;
           break;

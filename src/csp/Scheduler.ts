@@ -46,14 +46,11 @@ export class Scheduler {
     const all_assigned = this.variables.every((variable) => variable.hasAssignedValue());
     if (all_assigned) return;
     const currentVariable = this.pickVariable();
-    for (let value of currentVariable.domain) {
-      if (!value.discarded()) {
-        currentVariable.assignedValue = value;
-        const fcOutput = this.forwardChecking(currentVariable);
-        if (!fcOutput) return this.csp();
-        this.updateVisualizer(currentVariable);
-        currentVariable.resetAssignedValue();
-      }
+    for (let group of currentVariable.availableDomainGroups()) {
+      currentVariable.assignedValue = group;
+      if (this.forwardChecking(currentVariable)) return this.csp();
+      this.updateVisualizer(currentVariable);
+      currentVariable.resetAssignedValue();
     }
   };
 
@@ -81,24 +78,19 @@ export class Scheduler {
     while(this.variables.length != variablesNotChanged) {
       variablesNotChanged = 0;
       for (let variable of this.variables) {
-        variable.updateWeights(this.currentSchedule, this.softConstraints);
-        for(let value of variable.domain) {
-          if(!value.discarded()) {
-            if (value.weight < variable.assignedValue.weight) {
-              variable.resetAssignedValue();
-              variable.assignedValue = value;
-              this.updateCurrentSchedule(variable);
-              let assignedValueClashes: CourseGroup[] = []
-              this.variables.forEach((v) => {
-                const filteredDomain = v.filterDomain(this.currentSchedule);
-                assignedValueClashes.push(...filteredDomain);
-              });
-              variable.setAssigendValuesClashesWith(assignedValueClashes);
-              this.updateVisualizer(variable);
-            } else {
-              variablesNotChanged++;
-              break;
-            }
+        variable.updateDomainWeights(this.currentSchedule, this.softConstraints);
+        for(let group of variable.availableDomainGroups()) {
+          if (group.weight < variable.assignedValue.weight) {
+            variable.resetAssignedValue();
+            variable.assignedValue = group;
+            this.updateCurrentSchedule(variable);
+            this.variables.forEach((item) => {
+              variable.assignedValue.addToClashingCourseGroups(item.getClashingCourseGroups(this.currentSchedule));
+            });
+            this.updateVisualizer(variable);
+          } else {
+            notChangedVariables++;
+            break;
           }
         }
       }
