@@ -1,18 +1,12 @@
-import React, { useEffect, useState, useRef } from "react";
-import logo from "./logo.svg";
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
-//REFACTOR import { Variable, variables as vrs, setNextMethod } from "./csp/csp";
 import { Variable } from "./csp/models/Variable";
 import Schedule from "./components/Schedule";
-import { scheduleUpdated } from "./csp/services/VisualizerService";
-import { fromEvent, interval, from, Observable, ReplaySubject } from "rxjs";
-import { debounce, mergeMap, map } from "rxjs/operators";
+import {  ReplaySubject } from "rxjs";
 import VariablesView from "./components/VariablesView";
-//REFACTOR import { setSelectedPrefernces } from "./csp/models";
 import allCourses from "./csp/allCourses.json";
 import { setData } from "./csp/services";
 import { Scheduler } from "./csp/Scheduler";
-import { CoursesData, PreferencesData } from "./csp/types";
 import PreferencesSelector from "./components/PreferencesSelector";
 import { formatCourseGroups } from "./visualizer_utils";
 
@@ -20,7 +14,7 @@ function App() {
   const [variables, setVariables] = useState<Variable[]>();
   const [scheduler, setScheduler] = useState<Scheduler>();
   const [currentVariable, setCurrentVariable] = useState<any>();
-  const [cspMoves, setCSPMoves] = useState<any>([]);
+  const [cspMoves] = useState<any>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(0);
   const [pauseInterval, setPauseInterval] = useState<boolean>(false);
   const [movesSpeed, setMovesSpeed] = useState<number>(1000);
@@ -42,12 +36,11 @@ function App() {
   }, [availableCourses]);
 
   useEffect(() => {
-    if (started) {
-      if (!scheduler) {
-        const schedulerData = setData(preferences);
-        setVariables(JSON.parse(JSON.stringify(schedulerData.variables)));
+    if(started){
+      if(!scheduler){
+        const schedulerData = setData(preferences, variablePickingMethod);
+        setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
         const schedulerObject = new Scheduler(schedulerData);
-        schedulerObject.setVariablePickingMethod(variablePickingMethod)
         setScheduleUpdated(schedulerObject.scheduleUpdated)
         setScheduler(schedulerObject)
         schedulerObject.schedule()
@@ -82,11 +75,7 @@ function App() {
   };
 
   const changeVariablePickingMethod = (event: any) => {
-    const method = event.target.value;
-    setVariablePickingMethod(method)
-    if(scheduler) {
-      scheduler.setVariablePickingMethod(method);
-    }
+    setVariablePickingMethod(event.target.value);
   }
 
   const scrollToBottom = () => {
@@ -202,6 +191,7 @@ function App() {
                 >
                   <option value="min-values">Minimum Possible Values</option>
                   <option value="weights">Weights</option>
+                  <option value="average-domain-weights">Average Domain Weights</option>
                 </select>
               </label>
             </div>
