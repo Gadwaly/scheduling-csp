@@ -81,7 +81,7 @@ const PreferencesSelector = (props) => {
   };
 
   const removeCourse = (id: number) => {
-    setMyCourses(myCourses.filter((course) => course.id != id));
+    setMyCourses(myCourses.filter((course) => course.id !== id));
   };
 
   const generate = () => {

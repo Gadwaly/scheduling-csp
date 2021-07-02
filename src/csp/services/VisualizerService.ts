@@ -1,4 +1,4 @@
-import { ReplaySubject, Subject } from 'rxjs';
+import { ReplaySubject } from 'rxjs';
 
 const scheduleUpdated: ReplaySubject<any> = new ReplaySubject();
 

@@ -51,7 +51,7 @@ function Periods({
   return (
     <div
       className={
-        group.discardingCounter != 0
+        group.discardingCounter !== 0
           ? "periods_container discarded"
           : isAssigned
           ? "periods_container assigned"
@@ -68,7 +68,7 @@ function Periods({
           </div>
         );
       })}
-      <div>{Math.round(group.weight * 100) / 100}</div>
+      <div>{Math.round(group.cost * 100) / 100}</div>
     </div>
   );
 }

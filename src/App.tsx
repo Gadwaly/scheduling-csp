@@ -1,18 +1,12 @@
-import React, { useEffect, useState, useRef } from "react";
-import logo from "./logo.svg";
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
-//REFACTOR import { Variable, variables as vrs, setNextMethod } from "./csp/csp";
 import { Variable } from "./csp/models/Variable";
 import Schedule from "./components/Schedule";
-import { scheduleUpdated } from "./csp/services/VisualizerService";
-import { fromEvent, interval, from, Observable, ReplaySubject } from "rxjs";
-import { debounce, mergeMap, map } from "rxjs/operators";
+import {  ReplaySubject } from "rxjs";
 import VariablesView from "./components/VariablesView";
-//REFACTOR import { setSelectedPrefernces } from "./csp/models";
 import allCourses from "./csp/allCourses.json";
 import { setData } from "./csp/services";
 import { Scheduler } from "./csp/Scheduler";
-import { CoursesData, PreferencesData } from "./csp/types";
 import PreferencesSelector from "./components/PreferencesSelector";
 import { formatCourseGroups } from "./visualizer_utils";
 
@@ -20,19 +14,19 @@ function App() {
   const [variables, setVariables] = useState<Variable[]>();
   const [scheduler, setScheduler] = useState<Scheduler>();
   const [currentVariable, setCurrentVariable] = useState<any>();
-  const [cspMoves, setCSPMoves] = useState<any>([]);
+  const [cspMoves] = useState<any>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(0);
   const [pauseInterval, setPauseInterval] = useState<boolean>(false);
   const [movesSpeed, setMovesSpeed] = useState<number>(1000);
   const [started, setStarted] = useState<boolean>(false);
-  const [scheduleUpdated, setScheduleUpdated] = useState<ReplaySubject<any>>();
-  const [preferences, setPreferences] = useState<any>();
-  const [nextMethod, setNextMethod] = useState<string>("min-values");
-  const [availableCourses, setAvailableCourses] = useState<any>([]);
-  const [preferencesExist, setPreferencesExist] = useState<boolean>(true);
+  const [scheduleUpdated, setScheduleUpdated] = useState<ReplaySubject<any>>()
+  const [preferences, setPreferences] = useState<any>()
+  const [variablePickingMethod, setVariablePickingMethod] = useState<string>("min-values")
+  const [availableCourses, setAvailableCourses] = useState<any>([])
+  const [preferencesExist, setPreferencesExist] = useState<boolean>(true)
 
   useEffect(() => {
-    if (availableCourses.length == 0) {
+    if (availableCourses.length === 0) {
       setAvailableCourses(formatCourseGroups(allCourses));
     }
   }, []);
@@ -42,12 +36,11 @@ function App() {
   }, [availableCourses]);
 
   useEffect(() => {
-    if (started) {
-      if (!scheduler) {
-        const schedulerData = setData(preferences);
-        setVariables(JSON.parse(JSON.stringify(schedulerData.variables)));
+    if(started){
+      if(!scheduler){
+        const schedulerData = setData(preferences, variablePickingMethod);
+        setVariables(JSON.parse(JSON.stringify(schedulerData.variables)))
         const schedulerObject = new Scheduler(schedulerData);
-        schedulerObject.setNextMethod(nextMethod)
         setScheduleUpdated(schedulerObject.scheduleUpdated)
         setScheduler(schedulerObject)
         schedulerObject.schedule()
@@ -81,9 +74,9 @@ function App() {
     setMovesSpeed(event.target.value * 1);
   };
 
-  const changeNextMethod = (event: any) => {
-    setNextMethod(event.target.value);
-  };
+  const changeVariablePickingMethod = (event: any) => {
+    setVariablePickingMethod(event.target.value);
+  }
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -188,16 +181,17 @@ function App() {
           <>
             <div className="action">
               <label htmlFor="speeds">
-                Next Variable Heuristic
+                Variable Picking Heuristic
                 <select
                   defaultValue="min-values"
-                  onChange={changeNextMethod}
-                  value={nextMethod}
+                  onChange={changeVariablePickingMethod}
+                  value={variablePickingMethod}
                   name="next_variable_method"
                   id="variable-methods"
                 >
                   <option value="min-values">Minimum Possible Values</option>
-                  <option value="weights">Weights</option>
+                  <option value="costs">Costs</option>
+                  <option value="average-domain-costs">Average Domain Costs</option>
                 </select>
               </label>
             </div>
