@@ -35,10 +35,10 @@ const setVariables = (courses: CoursesData): Variable[] => {
               type: 'tutorial'
             });
           }
-          if (labIds[i] !== 'no-labs') {
+          if (labIds[j] !== 'no-labs') {
             periods.push({
-              ...group.labs[labIds[i]],
-              id: labIds[i],
+              ...group.labs[labIds[j]],
+              id: labIds[j],
               type: 'lab'
             });
           }
