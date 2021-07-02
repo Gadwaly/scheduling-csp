@@ -1,6 +1,6 @@
 import { CurrentSchedule } from ".";
 import { Period, SoftConstraint, dayNumber } from "../types";
-import { WeightCalculator } from '../services';
+import { CostCalculator } from '../services';
 
 interface PeriodsIds {
   tutorial?: string | null;
@@ -9,14 +9,14 @@ interface PeriodsIds {
 
 export class CourseGroup {
   periods: number[][];
-  weight: number;
+  cost: number;
   periodsIds: PeriodsIds;
   groupNum: string;
   discardingCounter: number;
   instructor!: string;
   course!: string;
   clashingCourseGroups: CourseGroup[];
-  private weightCalculator: WeightCalculator;
+  private costCalculator: CostCalculator;
 
   constructor(groupNum: string, group: Period[], instructor: string, course: string) {
     this.groupNum = groupNum;
@@ -24,8 +24,8 @@ export class CourseGroup {
     this.instructor = instructor;
     this.periodsIds = { tutorial: null, lab: null };
     this.setPeriods(group.filter((period: Period) => period !== undefined));
-    this.weightCalculator = new WeightCalculator(this.periods, this.course, this.instructor);
-    this.weight = 0;
+    this.costCalculator = new CostCalculator(this.periods, this.course, this.instructor);
+    this.cost = 0;
     this.discardingCounter = 0;
     this.clashingCourseGroups = [];
   }
@@ -71,8 +71,8 @@ export class CourseGroup {
     });
   };
 
-  updateWeight = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
+  updateCost = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
     softConstraints.forEach((softConstraint) => softConstraint.priority = 10);
-    this.weight = this.weightCalculator.calculate(currentSchedule, softConstraints);
+    this.cost = this.costCalculator.calculate(currentSchedule, softConstraints);
   };
 }

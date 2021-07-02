@@ -74,9 +74,9 @@ export class Scheduler {
     while(this.variables.length != variablesNotChanged) {
       variablesNotChanged = 0;
       for (let variable of this.variables) {
-        variable.updateDomainWeights(this.currentSchedule, this.softConstraints);
+        variable.updateDomainCosts(this.currentSchedule, this.softConstraints);
         for(let group of variable.availableDomainGroups()) {
-          if (group.weight < variable.assignedValue.weight) {
+          if (group.cost < variable.assignedValue.cost) {
             variable.resetAssignedValue();
             variable.assignedValue = group;
             this.updateCurrentSchedule(variable);

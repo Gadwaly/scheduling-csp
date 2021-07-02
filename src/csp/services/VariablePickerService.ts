@@ -43,10 +43,10 @@ export class WeightBasedVariablePicker extends VariablePicker {
           selectedVariable = variable;
           break;
         }
-        variable.updateDomainWeights(this.currentSchedule, this.softConstraints);
-        if (variable.domain[0].weight < min) {
+        variable.updateDomainCosts(this.currentSchedule, this.softConstraints);
+        if (variable.domain[0].cost < min) {
           selectedVariable = variable;
-          min = variable.domain[0].weight;
+          min = variable.domain[0].cost;
         }
       }
     }
@@ -74,14 +74,14 @@ class AverageDomainWeightsVariablePicker extends VariablePicker {
     let selectedVariable: Variable;
     for (let variable of this.variables) {
       if (!variable.hasAssignedValue()) {
-        variable.updateDomainWeights(this.currentSchedule, this.softConstraints);
-        let averageDomainWeights = variable.domain.reduce(
+        variable.updateDomainCosts(this.currentSchedule, this.softConstraints);
+        let averageDomainCosts = variable.domain.reduce(
           (accumalator, courseGroup) => {
-            return accumalator + courseGroup.weight
+            return accumalator + courseGroup.cost
           },
         0 ) / variable.domain.length;
-        if (averageDomainWeights < min) {
-          min = averageDomainWeights;
+        if (averageDomainCosts < min) {
+          min = averageDomainCosts;
           selectedVariable = variable;
         }
       }

@@ -29,13 +29,13 @@ export class Variable {
     return clashingCourseGroups;
   };
 
-  updateDomainWeights = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
+  updateDomainCosts = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
     this.domain.forEach((courseGroup) =>
-      courseGroup.updateWeight(currentSchedule, softConstraints)
+      courseGroup.updateCost(currentSchedule, softConstraints)
     );
 
     this.domain.sort((group1: CourseGroup, group2: CourseGroup) => {
-      return group1.weight - group2.weight;
+      return group1.cost - group2.cost;
     });
   };
 
