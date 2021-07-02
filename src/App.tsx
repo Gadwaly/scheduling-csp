@@ -190,8 +190,8 @@ function App() {
                   id="variable-methods"
                 >
                   <option value="min-values">Minimum Possible Values</option>
-                  <option value="weights">Weights</option>
-                  <option value="average-domain-weights">Average Domain Weights</option>
+                  <option value="costs">Costs</option>
+                  <option value="average-domain-costs">Average Domain Costs</option>
                 </select>
               </label>
             </div>

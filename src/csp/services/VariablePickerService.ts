@@ -9,12 +9,12 @@ export interface VariablePickerData {
 
 export const getVariablePicker = (pickingMethod: string, data: VariablePickerData): VariablePicker => {
   switch(pickingMethod) {
-    case 'weights':
-      return new WeightBasedVariablePicker(data);
+    case 'costs':
+      return new CostBasedVariablePicker(data);
     case 'min-values':
       return new MinValuesBasedVariablePicker(data);
-    case 'average-domain-weights':
-      return new AverageDomainWeightsVariablePicker(data);
+    case 'average-domain-costs':
+      return new AverageDomainCostsVariablePicker(data);
   }
 };
 
@@ -32,7 +32,7 @@ export abstract class VariablePicker {
   abstract pick(): Variable;
 };
 
-export class WeightBasedVariablePicker extends VariablePicker {
+export class CostBasedVariablePicker extends VariablePicker {
   pick = (): Variable => {
     let min = Number.MAX_SAFE_INTEGER;
     let selectedVariable: Variable;
@@ -68,7 +68,7 @@ class MinValuesBasedVariablePicker extends VariablePicker {
   };
 };
 
-class AverageDomainWeightsVariablePicker extends VariablePicker {
+class AverageDomainCostsVariablePicker extends VariablePicker {
   pick = (): Variable => {
     let min = Number.MAX_SAFE_INTEGER;
     let selectedVariable: Variable;
