@@ -97,12 +97,7 @@ function App() {
 
   const restart = () => {
     setStarted(false);
-    const schedulerData = setData(preferences);
-    setVariables(JSON.parse(JSON.stringify(schedulerData.variables)));
-    const schedulerObject = new Scheduler(schedulerData);
-    schedulerObject.setVariablePickingMethod(variablePickingMethod)
-    setScheduleUpdated(schedulerObject.scheduleUpdated)
-    setScheduler(schedulerObject)
+    setScheduler(null)
   }
 
   const clearCourses = () => {
