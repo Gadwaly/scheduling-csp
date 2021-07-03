@@ -74,7 +74,6 @@ export class Scheduler {
   };
 
   private forwardChecking = (currentVariable: Variable): boolean  => {
-    let success = true;
     this.updateCurrentSchedule(currentVariable);
     for (let variable of this.variables) {
       if (variable !== currentVariable) {
@@ -82,11 +81,11 @@ export class Scheduler {
         currentVariable.assignedValue.addToClashingCourseGroups(clashingCourseGroups);
         if (!variable.hasAssignedValue() && variable.hasEmptyDomain()) {
           variable.backtrackingCauseCount++;
-          success = false
+          return false;
         }
       }
     }
-    return success;
+    return true;
   };
 
   private improveAssignedValues = () => {
