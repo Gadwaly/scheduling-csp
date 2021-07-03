@@ -1,11 +1,6 @@
 import { CurrentSchedule } from '../models';
 import { SoftConstraint, dayNumber} from '../types';
 
-const priorityMap = {
-  2:0.5,
-  1:2,
-  0:3,  
-};
 
 export class CostCalculator {
 
@@ -24,7 +19,7 @@ export class CostCalculator {
       (accumalator, softConstraint) => {
         return (
           accumalator +
-          priorityMap[softConstraint.priority] *
+          softConstraint.priority *
             this[softConstraint.type](currentSchedule, softConstraint.param)
         );
       },

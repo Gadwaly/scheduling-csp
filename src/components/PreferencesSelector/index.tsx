@@ -127,8 +127,8 @@ const PreferencesSelector = (props) => {
               options={days}
               placeholder={"Select Days Off"}
               classNamePrefix="days-off-select"
-              function={[daysOff, setDaysOff]}
-              priority={[priorityDaysOff, setPriorityDaysOff]}
+              function={setDaysOff}
+              priority={setPriorityDaysOff}
             />
 
             <Preference
@@ -141,8 +141,8 @@ const PreferencesSelector = (props) => {
               ]}
               placeholder={"Select Min Max Days"}
               classNamePrefix="min-max-days"
-              function={[minMaxDays, setMinMaxDays]}
-              priority={[priorityMinMaxDays, setPriorityMinMaxDays]}
+              function={setMinMaxDays}
+              priority={setPriorityMinMaxDays}
             />
 
             <Preference
@@ -155,8 +155,8 @@ const PreferencesSelector = (props) => {
               ]}
               placeholder={"Select Early Late"}
               classNamePrefix="early-late-select"
-              function={[earlyLate, setEarlyLate]}
-              priority={[priorityEarlyLate, setPriorityEarlyLate]}
+              function={setEarlyLate}
+              priority={setPriorityEarlyLate}
             />
 
             <Preference
@@ -169,8 +169,8 @@ const PreferencesSelector = (props) => {
               ]}
               placeholder={"Gaps (Optional)"}
               classNamePrefix="gaps-select"
-              function={[gaps, setGaps]}
-              priority={[priorityGaps, setPriorityGaps]}
+              function={setGaps}
+              priority={setPriorityGaps}
             />
           </div>
         </>
