@@ -6,12 +6,14 @@ export class Variable {
   courseCode: string;
   assignedValue: CourseGroup | null;
   domain: CourseGroup[];
+  backtrackingCauseCount: number;
 
   constructor(name: string, code: string, domain: CourseGroup[]) {
     this.courseName = name;
     this.domain = domain;
     this.courseCode = code;
     this.assignedValue = null;
+    this.backtrackingCauseCount = 0;
   };
 
   resetAssignedValue = () => {

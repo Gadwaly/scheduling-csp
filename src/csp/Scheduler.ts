@@ -36,8 +36,22 @@ export class Scheduler {
     this.variables = this.schedulerSnapshots[snapshotIndex].variables;
     this.currentSchedule = this.schedulerSnapshots[snapshotIndex].currentSchedule;
   }
+
   schedule = (): RegistredGroup[] => {
-    this.csp();
+    let firstCSP = true;
+    do {
+      if(!firstCSP){
+        // Remove the variable with the highest backtrackingCauseCount
+        const maxBacktrackingCauseCount = Math.max(...this.variables.map(variable => variable.backtrackingCauseCount));
+        const variableToBeRemovedCode = this.variables.find(variable => variable.backtrackingCauseCount === maxBacktrackingCauseCount).courseCode;
+        this.restoreSnapshot(0)
+        this.variables = this.variables.filter(variable => variable.courseCode != variableToBeRemovedCode)
+        this.createSnapshot();
+        this.setVariablePickingMethod()
+      }
+      this.csp();
+      firstCSP = false
+    }while(!this.allVariablesHasAssignedValue())
     this.improveAssignedValues();
     return this.getFinalSchedule();
   };
@@ -67,6 +81,7 @@ export class Scheduler {
         const clashingCourseGroups = variable.getClashingCourseGroups(this.currentSchedule);
         currentVariable.assignedValue.addToClashingCourseGroups(clashingCourseGroups);
         if (!variable.hasAssignedValue() && variable.hasEmptyDomain()) {
+          variable.backtrackingCauseCount++;
           success = false
         }
       }
