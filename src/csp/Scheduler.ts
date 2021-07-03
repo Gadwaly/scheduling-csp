@@ -45,7 +45,7 @@ export class Scheduler {
         const maxBacktrackingCauseCount = Math.max(...this.variables.map(variable => variable.backtrackingCauseCount));
         const variableToBeRemovedCode = this.variables.find(variable => variable.backtrackingCauseCount === maxBacktrackingCauseCount).courseCode;
         this.restoreSnapshot(0)
-        this.variables = this.variables.filter(variable => variable.courseCode != variableToBeRemovedCode)
+        this.variables = this.variables.filter(variable => variable.courseCode !== variableToBeRemovedCode)
         this.createSnapshot();
         this.setVariablePickingMethod()
       }

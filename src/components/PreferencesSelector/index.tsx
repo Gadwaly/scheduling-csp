@@ -80,10 +80,6 @@ const PreferencesSelector = (props) => {
     setMyCourses(myCourses.filter((course) => course.id !== id));
   };
 
-  const generate = () => {
-    console.log("GENERATED");
-  };
-
   return (
     <div id={styles.registrationContainer}>
       <div id={styles.coursesSelectorContainer}>
