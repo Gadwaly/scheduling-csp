@@ -67,13 +67,13 @@ export class Scheduler {
     const currentVariable = this.pickVariable();
     for (let group of currentVariable.availableDomainGroups()) {
       currentVariable.assignedValue = group;
+      this.updateCurrentSchedule(currentVariable);
       if (this.forwardCheck(currentVariable)) return this.csp();
       this.updateVisualizer(currentVariable);
       currentVariable.resetAssignedValue();
     }
   };
 
-    this.updateCurrentSchedule(currentVariable);
   private forwardCheck = (currentVariable: Variable): boolean  => {
     for (let variable of this.variables) {
       if (variable !== currentVariable) {
