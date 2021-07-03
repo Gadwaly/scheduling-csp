@@ -147,4 +147,9 @@ export class CostCalculator {
       return 0;
     return 1 * internalWieght;
   };
+
+  clone = () => {
+    let clonedCostCalc = Object.assign(new CostCalculator([], null, null), JSON.parse(JSON.stringify(this)))
+    return clonedCostCalc
+  }
 };

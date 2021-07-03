@@ -2,6 +2,7 @@ import { ReplaySubject } from 'rxjs';
 import { Variable, CurrentSchedule } from './models';
 import { SchedulerData, RegistredGroup, SoftConstraint } from './types';
 import { getVariablePicker, VariablePicker, VariablePickerData } from './services'
+import { SchedulerSnapshot } from './types/SchedulerSnapshot';
 
 export class Scheduler {
   variables: Variable[];
@@ -9,6 +10,7 @@ export class Scheduler {
   scheduleUpdated: ReplaySubject<any>;
   softConstraints: SoftConstraint[];
   variablePicker: VariablePicker;
+  schedulerSnapshots: SchedulerSnapshot[];
 
   constructor(data: SchedulerData) {
     this.variables = data.variables;
@@ -16,12 +18,24 @@ export class Scheduler {
     this.currentSchedule = new CurrentSchedule();
     this.scheduleUpdated = new ReplaySubject();
     this.setVariablePickingMethod(data.variablePickingMethod);
+    this.createSnapshot();
   };
 
   setVariablePickingMethod = (method = 'min-values'): void => {
     this.variablePicker = getVariablePicker(method, this.variablePickerData());
   };
 
+  createSnapshot = () => {
+    this.schedulerSnapshots = [{
+      variables: this.variables.map(variable => variable.clone()),
+      currentSchedule: new CurrentSchedule()
+    }]
+  }
+
+  restoreSnapshot = (snapshotIndex: number) => {
+    this.variables = this.schedulerSnapshots[snapshotIndex].variables;
+    this.currentSchedule = this.schedulerSnapshots[snapshotIndex].currentSchedule;
+  }
   schedule = (): RegistredGroup[] => {
     this.csp();
     this.improveAssignedValues();

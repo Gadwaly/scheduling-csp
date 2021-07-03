@@ -55,4 +55,11 @@ export class Variable {
       lab: this.assignedValue.periodsIds.lab,
     }
   };
+
+  clone = (): Variable => {
+    let clonedVariable = Object.assign(new Variable(null, null, []), JSON.parse(JSON.stringify(this)))
+    clonedVariable.assignedValue = this.assignedValue?.clone()
+    clonedVariable.domain = this.domain.map(cGroup => cGroup.clone())
+    return clonedVariable
+  }
 };
