@@ -1,6 +1,12 @@
 import { CurrentSchedule } from '../models';
 import { SoftConstraint, dayNumber} from '../types';
 
+const priorityMap = {
+  2:0.5,
+  1:2,
+  0:3,  
+};
+
 export class CostCalculator {
 
   private periods: number[][];
@@ -18,7 +24,7 @@ export class CostCalculator {
       (accumalator, softConstraint) => {
         return (
           accumalator +
-          softConstraint.priority *
+          priorityMap[softConstraint.priority] *
             this[softConstraint.type](currentSchedule, softConstraint.param)
         );
       },
@@ -108,7 +114,6 @@ export class CostCalculator {
     days: string[],
     internalWieght = 3
   ) => {
-    console.log("daysoff", days);
     const busyDays = new Array(6).fill(false);
     for (let i = 0; i < 6; i++) {
       for (let j = i * 12; j < i * 12 + 12; j++) {
@@ -124,7 +129,6 @@ export class CostCalculator {
       for (let j = 0; j < this.periods.length; j++) {
         const period = this.periods[j];
         let dayIndex = Math.floor(period[0] / 12);
-        console.log(dayNumber[days[i]]);
         if (dayIndex === dayNumber[days[i]] && !busyDays[i]) {
           hits++;
           break;
@@ -142,7 +146,7 @@ export class CostCalculator {
   ) => {
     if ( !this.instructor ||
       !instructors[this.course] ||
-      this.instructor === instructors[this.course]
+      this.instructor === instructors[this.course].instructor
     )
       return 0;
     return 1 * internalWieght;

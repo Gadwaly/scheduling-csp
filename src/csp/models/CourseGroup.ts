@@ -72,7 +72,6 @@ export class CourseGroup {
   };
 
   updateCost = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
-    softConstraints.forEach((softConstraint) => softConstraint.priority = 10);
     this.cost = this.costCalculator.calculate(currentSchedule, softConstraints);
   };
 }

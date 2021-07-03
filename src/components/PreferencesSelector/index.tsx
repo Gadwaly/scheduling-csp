@@ -19,7 +19,6 @@ const PreferencesSelector = (props) => {
   const [myCourses, setMyCourses] = useState<Course[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<any[]>([]);
   const [totalCreditHours, setTotalCreditHours] = useState<number>(0);
-  const [courseInstructor, setCourseInstructor] = useState<{}>(null);
   const [daysOff, setDaysOff] = useState<any[]>([]);
   const [earlyLate, setEarlyLate] = useState<any>(null);
   const [minMaxDays, setMinMaxDays] = useState<any>([]);
@@ -36,7 +35,6 @@ const PreferencesSelector = (props) => {
       [earlyLate?.value, priorityEarlyLate],
       [minMaxDays?.value, priorityMinMaxDays],
       [gaps?.value, priorityGaps],
-      [courseInstructor, 0]
     );
   }, [
     myCourses,
@@ -48,7 +46,6 @@ const PreferencesSelector = (props) => {
     priorityEarlyLate,
     priorityMinMaxDays,
     priorityGaps,
-    courseInstructor,
   ]);
 
   const addCourses = () => {
@@ -57,16 +54,12 @@ const PreferencesSelector = (props) => {
   };
 
   const setSelectedInstructor = (course: Course, instructorId: number) => {
-    let _courseInstructor = { ...courseInstructor };
-
-    if (instructorId !== undefined)
-      _courseInstructor[course.name] = instructorId;
-    else if (_courseInstructor[course.name]) {
-      delete _courseInstructor[course.name];
-      if (!Object.keys(_courseInstructor).length) _courseInstructor = null;
-    }
-
-    setCourseInstructor(_courseInstructor);
+    setMyCourses(myCourses.map(_course => {
+      if(_course.code === course.code){
+        return {..._course, selectedInstructor:instructorId}
+      }
+      return _course
+    }))
   };
 
   const filterOption = (option: any, inputValue: any) => {

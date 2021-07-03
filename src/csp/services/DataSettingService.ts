@@ -51,7 +51,7 @@ const setVariables = (courses: CoursesData): Variable[] => {
                 ...periods
               ],
               group.instructor.toString(),
-              course.name
+              courseCode
             )
           );
         }
@@ -73,11 +73,17 @@ export const setSoftConstraints = (preferencesData: PreferencesData): SoftConstr
         type: preferencesMap[preferenceName][preference.value],
         priority: +preference.order,
       });
-    } else {
+    } else if(preference.value) {
       softConstraints.push({
         type: preferencesMap[preferenceName],
         priority: +preference.order,
         param: preference.value
+      });
+    } else { // courses instructor
+      softConstraints.push({
+        type: preferencesMap[preferenceName],
+        priority: +2,
+        param: preference
       });
     }
   }
@@ -97,6 +103,6 @@ const preferencesMap = {
     'min': 'minDays',
     'max': 'maxDays'
   },
-  'daysOff': 'daysOff',
-  'courseInstructor': 'courseInstructor'
+  'offDays': 'daysOff',
+  'courses': 'courseInstructor'
 };
