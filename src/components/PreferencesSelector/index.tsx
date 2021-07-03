@@ -1,6 +1,5 @@
 import Select from "react-select";
 import styles from "./style.module.css";
-import { dummyCourses } from "./data";
 import { useEffect, useState } from "react";
 import Course from "./interfaces/Course";
 import CourseCard from "../CourseCard";
@@ -51,6 +50,10 @@ const PreferencesSelector = (props) => {
     courseInstructor,
   ]);
 
+  useEffect(()=> {
+    setTotalCreditHours(myCourses.reduce((acc, current) => acc+current.creditHours, 0))
+  }, [myCourses])
+ 
   const addCourses = () => {
     setMyCourses(myCourses.concat(selectedCourses));
     setSelectedCourses([]);
