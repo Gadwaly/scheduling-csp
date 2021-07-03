@@ -6,12 +6,14 @@ export class Variable {
   courseCode: string;
   assignedValue: CourseGroup | null;
   domain: CourseGroup[];
+  backtrackingCauseCount: number;
 
   constructor(name: string, code: string, domain: CourseGroup[]) {
     this.courseName = name;
     this.domain = domain;
     this.courseCode = code;
     this.assignedValue = null;
+    this.backtrackingCauseCount = 0;
   };
 
   resetAssignedValue = () => {
@@ -55,4 +57,11 @@ export class Variable {
       lab: this.assignedValue.periodsIds.lab,
     }
   };
+
+  clone = (): Variable => {
+    let clonedVariable = Object.assign(new Variable(null, null, []), JSON.parse(JSON.stringify(this)))
+    clonedVariable.assignedValue = this.assignedValue?.clone()
+    clonedVariable.domain = this.domain.map(cGroup => cGroup.clone())
+    return clonedVariable
+  }
 };
