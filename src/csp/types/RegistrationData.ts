@@ -36,7 +36,7 @@ export interface PreferencesData {
     value: EarlyLateValues;
     order: number | string;
   };
-  daysOff?: {
+  offDays?: {
     value: DayValue[];
     order: number | string;
   };
@@ -46,10 +46,6 @@ export interface PreferencesData {
   };
   minMaxDays?: {
     value: MinMaxDayesValues;
-    order: number | string;
-  };
-  courseInstructor?: {
-    value: {} | null;
     order: number | string;
   };
 }

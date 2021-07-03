@@ -1,3 +1,4 @@
+import React from "react";
 import { CourseGroup, Variable } from "../../csp/models";
 import { Day } from "../Schedule/Period";
 import "./VariablesView.css";
@@ -11,30 +12,26 @@ export default function VariablesView({
   variables,
   currentVariable,
 }: VariablesViewProps) {
-  //   variables.map((variable) =>
-  //     console.log(variable.courseName, variable.assignedValue, variable.domain)
-  //   );
-
   return (
     <>
       {variables &&
-        variables.map((variable, index) => {
+        variables.map((variable, variable_index) => {
           const isCurrent =
             currentVariable?.courseName === variable?.courseName;
           return (
-            <>
-              <h1 style={{marginTop: "7px", marginBottom: "3px"}} className={isCurrent ? "current" : ""} key={index}>
+            <React.Fragment key={variable_index}>
+              <h1 style={{marginTop: "7px", marginBottom: "3px"}} className={isCurrent ? "current" : ""}>
                 {variable.courseName}
               </h1>
-              {variable.domain.map((group) => {
+              {variable.domain.map((group, group_index) => {
                 if (
                   JSON.stringify(group.periods) ===
                   JSON.stringify(variable?.assignedValue?.periods)
                 )
-                  return <Periods group={group} isAssigned={true} />;
-                return <Periods group={group} />;
+                  return <Periods key={group_index} group={group} isAssigned={true} />;
+                return <Periods key={group_index} group={group} />;
               })}
-            </>
+            </React.Fragment>
           );
         })}
     </>

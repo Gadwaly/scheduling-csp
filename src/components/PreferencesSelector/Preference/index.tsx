@@ -5,8 +5,8 @@ import styles from "../style.module.css";
 
 const Preference = (props: any) => {
     const [clicked, setClicked] = useState<number>(3);
-    const [data, setData] = props.function;
-    const [priority, setPriority] = props.priority;
+    const setData = props.function;
+    const setPriority = props.priority;
 
 
     const handleClick = (x : number, tag : number) => {
@@ -20,17 +20,17 @@ const Preference = (props: any) => {
         <div>
             <ul className={styles.tags}>
                 <li className={`${styles.tag} ${clicked === 0 ? styles.selectedTag : ''}`}
-                    onClick={() => handleClick(0, 0)}>
+                    onClick={() => handleClick(3, 0)}>
                      {"High"}
                 </li>
                 <li className={`${styles.tag} ${clicked === 1 ? styles.selectedTag : ''}`}
-                    onClick={() => handleClick(1, 1)}>
+                    onClick={() => handleClick(2, 1)}>
 
                     {"Medium"}
 
                 </li>
                 <li className={`${styles.tag} ${clicked === 2 ? styles.selectedTag : ''}`}
-                    onClick={() => handleClick(2, 2)}>
+                    onClick={() => handleClick(0.5, 2)}>
                     {"Low"}
                 </li>
             </ul>

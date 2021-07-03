@@ -110,13 +110,20 @@ function App() {
     daysOff,
     earlyLate,
     minMaxDays,
-    gaps,
-    coursesInstructors
+    gaps
   ) => {
     const tableArray = courses.map((course) => {
       return { [course.code]: allCourses[course.code] };
     });
     const table = Object.assign({}, ...tableArray);
+
+    const coursesInstructorsArray = courses.filter((course) => 
+      course.selectedInstructor
+    ).map((course) => {
+      return { [course.code]: {instructor:course.selectedInstructor}}
+    })
+    const coursesInstructors = Object.assign({}, ...coursesInstructorsArray)
+    
     const preferencesObject = {
       ...(earlyLate[0] && {
         earlyOrLate: {
@@ -131,7 +138,7 @@ function App() {
         },
       }),
       ...(daysOff[0].length > 0 && {
-        daysOff: {
+        offDays: {
           value: daysOff[0].map((dayOff) => dayOff),
           order: daysOff[1],
         },
@@ -142,10 +149,9 @@ function App() {
           order: gaps[1],
         },
       }),
-      ...(coursesInstructors[0] && {
-        courseInstructor: {
-          value: coursesInstructors[0],
-          order: coursesInstructors[1],
+      ...(coursesInstructors && Object.keys(coursesInstructors).length !== 0 && {
+        courses: {
+          ...coursesInstructors
         },
       }),
     };

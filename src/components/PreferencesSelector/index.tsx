@@ -19,15 +19,14 @@ const PreferencesSelector = (props) => {
   const [myCourses, setMyCourses] = useState<Course[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<any[]>([]);
   const [totalCreditHours, setTotalCreditHours] = useState<number>(0);
-  const [courseInstructor, setCourseInstructor] = useState<{}>(null);
   const [daysOff, setDaysOff] = useState<any[]>([]);
   const [earlyLate, setEarlyLate] = useState<any>(null);
   const [minMaxDays, setMinMaxDays] = useState<any>([]);
   const [gaps, setGaps] = useState<any>(null);
-  const [priorityDaysOff, setPriorityDaysOff] = useState<number>(0);
-  const [priorityEarlyLate, setPriorityEarlyLate] = useState<number>(0);
-  const [priorityMinMaxDays, setPriorityMinMaxDays] = useState<number>(0);
-  const [priorityGaps, setPriorityGaps] = useState<number>(0);
+  const [priorityDaysOff, setPriorityDaysOff] = useState<number>(2);
+  const [priorityEarlyLate, setPriorityEarlyLate] = useState<number>(2);
+  const [priorityMinMaxDays, setPriorityMinMaxDays] = useState<number>(2);
+  const [priorityGaps, setPriorityGaps] = useState<number>(2);
 
   useEffect(() => {
     props.buildPreferences(
@@ -36,7 +35,6 @@ const PreferencesSelector = (props) => {
       [earlyLate?.value, priorityEarlyLate],
       [minMaxDays?.value, priorityMinMaxDays],
       [gaps?.value, priorityGaps],
-      [courseInstructor, 0]
     );
   }, [
     myCourses,
@@ -48,7 +46,6 @@ const PreferencesSelector = (props) => {
     priorityEarlyLate,
     priorityMinMaxDays,
     priorityGaps,
-    courseInstructor,
   ]);
 
   const addCourses = () => {
@@ -57,16 +54,12 @@ const PreferencesSelector = (props) => {
   };
 
   const setSelectedInstructor = (course: Course, instructorId: number) => {
-    let _courseInstructor = { ...courseInstructor };
-
-    if (instructorId !== undefined)
-      _courseInstructor[course.name] = instructorId;
-    else if (_courseInstructor[course.name]) {
-      delete _courseInstructor[course.name];
-      if (!Object.keys(_courseInstructor).length) _courseInstructor = null;
-    }
-
-    setCourseInstructor(_courseInstructor);
+    setMyCourses(myCourses.map(_course => {
+      if(_course.code === course.code){
+        return {..._course, selectedInstructor:instructorId}
+      }
+      return _course
+    }))
   };
 
   const filterOption = (option: any, inputValue: any) => {
@@ -134,8 +127,8 @@ const PreferencesSelector = (props) => {
               options={days}
               placeholder={"Select Days Off"}
               classNamePrefix="days-off-select"
-              function={[daysOff, setDaysOff]}
-              priority={[priorityDaysOff, setPriorityDaysOff]}
+              function={setDaysOff}
+              priority={setPriorityDaysOff}
             />
 
             <Preference
@@ -148,8 +141,8 @@ const PreferencesSelector = (props) => {
               ]}
               placeholder={"Select Min Max Days"}
               classNamePrefix="min-max-days"
-              function={[minMaxDays, setMinMaxDays]}
-              priority={[priorityMinMaxDays, setPriorityMinMaxDays]}
+              function={setMinMaxDays}
+              priority={setPriorityMinMaxDays}
             />
 
             <Preference
@@ -162,8 +155,8 @@ const PreferencesSelector = (props) => {
               ]}
               placeholder={"Select Early Late"}
               classNamePrefix="early-late-select"
-              function={[earlyLate, setEarlyLate]}
-              priority={[priorityEarlyLate, setPriorityEarlyLate]}
+              function={setEarlyLate}
+              priority={setPriorityEarlyLate}
             />
 
             <Preference
@@ -176,8 +169,8 @@ const PreferencesSelector = (props) => {
               ]}
               placeholder={"Gaps (Optional)"}
               classNamePrefix="gaps-select"
-              function={[gaps, setGaps]}
-              priority={[priorityGaps, setPriorityGaps]}
+              function={setGaps}
+              priority={setPriorityGaps}
             />
           </div>
         </>
