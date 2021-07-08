@@ -1,6 +1,6 @@
 import { CurrentSchedule } from ".";
 import { Period, SoftConstraint, dayNumber } from "../types";
-import { CostCalculator } from '../services';
+import { CostCalculator, CostCalculatorData } from '../services';
 
 interface PeriodsIds {
   tutorial?: string | null;
@@ -16,7 +16,6 @@ export class CourseGroup {
   instructor!: string;
   course!: string;
   clashingCourseGroups: CourseGroup[];
-  private costCalculator: CostCalculator;
 
   constructor(groupNum: string, group: Period[], instructor: string, course: string) {
     this.groupNum = groupNum;
@@ -24,7 +23,6 @@ export class CourseGroup {
     this.instructor = instructor;
     this.periodsIds = { tutorial: null, lab: null };
     this.setPeriods(group.filter((period: Period) => period !== undefined));
-    this.costCalculator = new CostCalculator(this.periods, this.course, this.instructor);
     this.cost = 0;
     this.discardingCounter = 0;
     this.clashingCourseGroups = [];
@@ -72,12 +70,20 @@ export class CourseGroup {
   };
 
   updateCost = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
-    this.cost = this.costCalculator.calculate(currentSchedule, softConstraints);
+    this.cost = new CostCalculator(this.costCalculatorData())
+    .calculate(currentSchedule, softConstraints);
   };
 
   clone = (): CourseGroup => {
     let clonedGroup = Object.assign(new CourseGroup(null, [], null, null), JSON.parse(JSON.stringify(this)))
-    clonedGroup.costCalculator = this.costCalculator.clone()
     return clonedGroup
   }
-}
+
+  costCalculatorData = (): CostCalculatorData => {
+    return {
+      periods: this.periods,
+      course: this.course,
+      instructor: this.instructor
+    }
+  };
+};
