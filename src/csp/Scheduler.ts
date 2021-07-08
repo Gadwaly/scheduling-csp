@@ -1,16 +1,16 @@
 import { ReplaySubject } from 'rxjs';
 import { Variable, CurrentSchedule } from './models';
 import { SchedulerData, RegistredGroup, SoftConstraint } from './types';
-import { getVariablePicker, VariablePicker, VariablePickerData } from './services'
 import { SchedulerSnapshot } from './types/SchedulerSnapshot';
+import { getVariablePicker, VariablePickerData } from './services'
 
 export class Scheduler {
   variables: Variable[];
   currentSchedule: CurrentSchedule;
   scheduleUpdated: ReplaySubject<any>;
   softConstraints: SoftConstraint[];
-  variablePicker: VariablePicker;
   schedulerSnapshots: SchedulerSnapshot[];
+  variablePickingMethod: string;
 
   constructor(data: SchedulerData) {
     this.variables = data.variables;
@@ -22,7 +22,7 @@ export class Scheduler {
   };
 
   setVariablePickingMethod = (method = 'min-values'): void => {
-    this.variablePicker = getVariablePicker(method, this.variablePickerData());
+    this.variablePickingMethod = method;
   };
 
   createSnapshot = () => {
@@ -67,26 +67,25 @@ export class Scheduler {
     const currentVariable = this.pickVariable();
     for (let group of currentVariable.availableDomainGroups()) {
       currentVariable.assignedValue = group;
-      if (this.forwardChecking(currentVariable)) return this.csp();
+      this.updateCurrentSchedule(currentVariable);
+      if (this.forwardCheck(currentVariable)) return this.csp();
       this.updateVisualizer(currentVariable);
       currentVariable.resetAssignedValue();
     }
   };
 
-  private forwardChecking = (currentVariable: Variable): boolean  => {
-    let success = true;
-    this.updateCurrentSchedule(currentVariable);
+  private forwardCheck = (currentVariable: Variable): boolean  => {
     for (let variable of this.variables) {
       if (variable !== currentVariable) {
         const clashingCourseGroups = variable.getClashingCourseGroups(this.currentSchedule);
         currentVariable.assignedValue.addToClashingCourseGroups(clashingCourseGroups);
         if (!variable.hasAssignedValue() && variable.hasEmptyDomain()) {
           variable.backtrackingCauseCount++;
-          success = false
+          return false;
         }
       }
     }
-    return success;
+    return true;
   };
 
   private improveAssignedValues = () => {
@@ -115,7 +114,7 @@ export class Scheduler {
   };
 
   private pickVariable = (): Variable => {
-    return this.variablePicker.pick();
+    return getVariablePicker(this.variablePickingMethod, this.variablePickerData()).pick();
   };
 
   private allVariablesHasAssignedValue = (): boolean => {

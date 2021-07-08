@@ -1,5 +1,11 @@
 import { CurrentSchedule } from '../models';
-import { SoftConstraint, dayNumber} from '../types';
+import { SoftConstraint, dayNumber } from '../types';
+
+export interface CostCalculatorData {
+  periods: number[][];
+  course: string;
+  instructor: string;
+};
 
 
 export class CostCalculator {
@@ -8,10 +14,10 @@ export class CostCalculator {
   private course: string;
   private instructor: string;
 
-  constructor(periods: number[][], course: string, instructor: string) {
-    this.periods = periods;
-    this.course = course;
-    this.instructor = instructor;
+  constructor(data: CostCalculatorData) {
+    this.periods = data.periods;
+    this.course = data.course;
+    this.instructor = data.instructor;
   };
 
   calculate = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): number => {
@@ -146,9 +152,4 @@ export class CostCalculator {
       return 0;
     return 1 * internalWieght;
   };
-
-  clone = () => {
-    let clonedCostCalc = Object.assign(new CostCalculator([], null, null), JSON.parse(JSON.stringify(this)))
-    return clonedCostCalc
-  }
 };
