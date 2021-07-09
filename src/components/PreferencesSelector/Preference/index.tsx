@@ -10,10 +10,13 @@ const Preference = (props: any) => {
 
 
     const handleClick = (x : number, tag : number) => {
-
+      if(clicked < 3) {
+        setPriority(1);
+        setClicked(3);
+      } else {
         setPriority(x);
         setClicked(tag);
-
+      }
     }
 
     return(   
