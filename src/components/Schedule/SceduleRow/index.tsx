@@ -25,7 +25,7 @@ const ScheduleRow = ({
               <React.Fragment key={period.id}>
                 {EmptyCells(i === 0 ? period.from - 1 : 0)}
                 <td colSpan={period.to - period.from + 1} className="period">
-                  {period.course_name}
+                  {period.course_name} - {period.instructor}
                 </td>
                 {EmptyCells(
                   schedule[i + 1]

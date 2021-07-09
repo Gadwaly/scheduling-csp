@@ -22,6 +22,7 @@ export default interface Period {
   from: number;
   to: number;
   course_name: string;
+  instructor?: string;
 }
 
 export { PeriodType, Day };

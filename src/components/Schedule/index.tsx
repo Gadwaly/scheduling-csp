@@ -43,6 +43,7 @@ const getSchedule = (variables: Variable[]): Period[] => {
           from,
           to,
           course_name: variable.courseName,
+          instructor: variable.assignedValue.instructor
         });
       });
     }
