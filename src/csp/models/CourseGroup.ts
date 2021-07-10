@@ -8,6 +8,7 @@ interface PeriodsIds {
 };
 
 export class CourseGroup {
+  uniqueID: string;
   periods: number[][];
   cost: number;
   periodsIds: PeriodsIds;
@@ -26,6 +27,7 @@ export class CourseGroup {
     this.cost = 0;
     this.discardingCounter = 0;
     this.clashingCourseGroups = [];
+    this.uniqueID = `${this.course}-${groupNum}${this.periodsIds.tutorial ? "-" + this.periodsIds.tutorial : ""}${this.periodsIds.lab ? "-" + this.periodsIds.lab : ""}`
   }
 
   private setPeriods = (group: Period[]): void => {
@@ -76,6 +78,7 @@ export class CourseGroup {
 
   clone = (): CourseGroup => {
     let clonedGroup = Object.assign(new CourseGroup(null, [], null, null), JSON.parse(JSON.stringify(this)))
+    clonedGroup.clashingCourseGroups = this.clashingCourseGroups.map((clashingGroup) => clashingGroup.uniqueID)
     return clonedGroup
   }
 
