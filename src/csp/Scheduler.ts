@@ -3,6 +3,7 @@ import { Variable, CurrentSchedule, CourseGroup } from './models';
 import { SchedulerData, RegistredGroup, SoftConstraint } from './types';
 import { SchedulerSnapshot } from './types/SchedulerSnapshot';
 import { getVariablePicker, VariablePickerData } from './services'
+import { ScheduleCostCalculator } from './services/ScheduleCostCalculator';
 
 export class Scheduler {
   variables: Variable[];
@@ -63,7 +64,15 @@ export class Scheduler {
   };
 
   private csp = (): void => {
-    if (this.allVariablesHasAssignedValue()) return;
+    if (this.allVariablesHasAssignedValue()) {
+      const score = new ScheduleCostCalculator(
+        this.currentSchedule,
+        this.softConstraints
+      );
+      score.printLogs();
+      console.log("final score", score.calculate());
+      return;
+    };
     const currentVariable = this.pickVariable();
     for (let group of currentVariable.availableDomainGroups()) {
       currentVariable.assignedValue = group;

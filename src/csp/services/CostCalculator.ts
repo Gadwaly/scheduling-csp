@@ -1,15 +1,13 @@
-import { CurrentSchedule } from '../models';
-import { SoftConstraint, dayNumber } from '../types';
+import { CurrentSchedule } from "../models";
+import { SoftConstraint, dayNumber } from "../types";
 
 export interface CostCalculatorData {
   periods: number[][];
   course: string;
   instructor: string;
-};
-
+}
 
 export class CostCalculator {
-
   private periods: number[][];
   private course: string;
   private instructor: string;
@@ -18,19 +16,19 @@ export class CostCalculator {
     this.periods = data.periods;
     this.course = data.course;
     this.instructor = data.instructor;
-  };
+  }
 
-  calculate = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): number => {
-    return softConstraints.reduce(
-      (accumalator, softConstraint) => {
-        return (
-          accumalator +
-          softConstraint.priority *
-            this[softConstraint.type](currentSchedule, softConstraint.param)
-        );
-      },
-      0
-    );
+  calculate = (
+    currentSchedule: CurrentSchedule,
+    softConstraints: SoftConstraint[]
+  ): number => {
+    return softConstraints.reduce((accumalator, softConstraint) => {
+      return (
+        accumalator +
+        softConstraint.priority *
+          this[softConstraint.type](currentSchedule, softConstraint.param)
+      );
+    }, 0);
   };
 
   private minDays = (currentSchedule: CurrentSchedule, internalWieght = 1) => {
@@ -56,10 +54,13 @@ export class CostCalculator {
   };
 
   private maxDays = (currentSchedule: CurrentSchedule, internalWieght = 1) => {
-    return -this.minDays(currentSchedule) * internalWieght;
+    return -this.minDays(currentSchedule, 1) * internalWieght;
   };
 
-  private earlyPeriods = (_currentSchedule: CurrentSchedule, internalWieght = 1 / 5) => {
+  private earlyPeriods = (
+    _currentSchedule: CurrentSchedule,
+    internalWieght = 1 / 5
+  ) => {
     let earliness = 0;
     this.periods.forEach((period) => {
       const day = Math.floor(period[0] / 12),
@@ -71,8 +72,11 @@ export class CostCalculator {
     return earliness * internalWieght;
   };
 
-  private latePeriods = (currentSchedule: CurrentSchedule, internalWieght = 1 / 5) => {
-    return -this.earlyPeriods(currentSchedule) * internalWieght;
+  private latePeriods = (
+    currentSchedule: CurrentSchedule,
+    internalWieght = 1 / 5
+  ) => {
+    return -this.earlyPeriods(currentSchedule, 1) * internalWieght;
   };
 
   private gaps = (currentSchedule: CurrentSchedule, internalWieght = 1 / 3) => {
@@ -106,8 +110,11 @@ export class CostCalculator {
     return gaps * internalWieght;
   };
 
-  private gapsPlus = (currentSchedule: CurrentSchedule, internalWieght = 1 / 3) => {
-    return -this.gaps(currentSchedule) * internalWieght;
+  private gapsPlus = (
+    currentSchedule: CurrentSchedule,
+    internalWieght = 1 / 3
+  ) => {
+    return -this.gaps(currentSchedule, 1) * internalWieght;
   };
 
   private daysOff = (
@@ -125,16 +132,20 @@ export class CostCalculator {
       }
     }
 
-    let hits = 0;
+    let hits = 0,
+      hit = false;
     for (let i = 0; i < days.length; i++) {
       for (let j = 0; j < this.periods.length; j++) {
         const period = this.periods[j];
         let dayIndex = Math.floor(period[0] / 12);
         if (dayIndex === dayNumber[days[i]] && !busyDays[i]) {
           hits++;
+          hit = true;
           break;
         }
       }
+      if (!hit) hits--;
+      hit = false;
     }
 
     return hits * internalWieght;
@@ -145,11 +156,10 @@ export class CostCalculator {
     instructors: any,
     internalWieght = 2
   ) => {
-    if ( !this.instructor ||
-      !instructors[this.course] ||
-      this.instructor === instructors[this.course].instructor
-    )
-      return 0;
-    return 1 * internalWieght;
+    if (this.instructor && instructors[this.course]) {
+      if (this.instructor === instructors[this.course].instructor)
+        return -1 * internalWieght;
+      else return 1 * internalWieght;
+    }
   };
-};
+}
