@@ -16,6 +16,7 @@ export class CourseGroup {
   instructor!: string;
   course!: string;
   clashingCourseGroups: CourseGroup[];
+  reservedTimeSlots: object;
 
   constructor(groupNum: string, group: Period[], instructor: string, course: string) {
     this.groupNum = groupNum;
@@ -23,6 +24,7 @@ export class CourseGroup {
     this.instructor = instructor;
     this.periodsIds = { tutorial: null, lab: null };
     this.setPeriods(group.filter((period: Period) => period !== undefined));
+    this.setReservedTimeSlots();
     this.cost = 0;
     this.discardingCounter = 0;
     this.clashingCourseGroups = [];
@@ -37,6 +39,14 @@ export class CourseGroup {
       return [dayBase + (period.from - 1), dayBase + (period.to - 1)];
     })
   };
+
+  private setReservedTimeSlots = (): void => {
+    this.periods.forEach((period) => {
+      for(let i = period[0]; i < period[1] + 1; i++){
+        this.reservedTimeSlots[i] = true;
+      }
+    });
+  }
 
   addToClashingCourseGroups = (groups: CourseGroup[]): void => {
     groups.forEach((group) => group.incrementDiscardingCounter());
@@ -67,6 +77,16 @@ export class CourseGroup {
       }
       return false;
     });
+  };
+
+  clashesWithSpecificGroup = (group: CourseGroup): boolean => {
+    group.periods.forEach((period) => {
+      for(let i = period[0]; i < period[1] + 1; i++){
+        if(this.reservedTimeSlots[i])
+          return true;
+      }
+    })
+    return false;
   };
 
   updateCost = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
