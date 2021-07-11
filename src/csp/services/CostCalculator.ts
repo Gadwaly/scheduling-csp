@@ -23,27 +23,29 @@ export class CostCalculator {
   };
 
   calculate(group: CourseGroup) {
-    let cost = new SoftConstraintsBasedCostCalculator(this.softConstraintsCostCalculatorData)
+    group.cost = new SoftConstraintsBasedCostCalculator(this.softConstraintsCostCalculatorData)
     .calculate(this.schedulerContextData.currentSchedule, this.schedulerContextData.softConstraints);
-    return this.applyGroupOrderingMethods(cost, group);
+    return this.applyGroupOrderingMethods(group);
   };
 
-  private applyGroupOrderingMethods = (cost: number, group: CourseGroup): number => {
+  private applyGroupOrderingMethods = (group: CourseGroup): number => {
     this.schedulerContextData.groupOrderingMethods.forEach((method) => {
-      cost = this[method](group);
+      group.cost = this[method](group);
     });
-    return cost;
+    return group.cost;
   }
 
   private considerDiscardedAverageCostsWithTheirPercentage = (group: CourseGroup): number => {
     const DISCARDING_GROUPS_AVERAGE_COSTS_THRESHOLD = 0;
 
     const variables = this.schedulerContextData.variables;
-    let availableGroups: CourseGroup[];
-    let discardedGroups: CourseGroup[];
-    variables.forEach((variable) => availableGroups.push(...variable.availableDomainGroups()));
+    let availableGroups: CourseGroup[] = [];
+    let discardedGroups: CourseGroup[] = [];
+    variables.forEach((variable) => {
+      availableGroups.push(...variable.availableDomainGroups())
+    });
     availableGroups.forEach((courseGroup) => {
-      if(courseGroup !== group && group.clashesWithSpecificGroup(courseGroup)) {
+      if(group.clashesWithSpecificGroup(courseGroup)) {
         discardedGroups.push(courseGroup);
       }
     });

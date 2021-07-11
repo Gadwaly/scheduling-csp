@@ -1,13 +1,8 @@
 import { CurrentSchedule, Variable } from '../models';
 import {SoftConstraint} from '../types';
+import { SchedulerContextData } from '.';
 
-export interface VariablePickerData {
-  variables: Variable[];
-  currentSchedule: CurrentSchedule;
-  softConstraints: SoftConstraint[];
-};
-
-export const getVariablePicker = (pickingMethod: string, data: VariablePickerData): VariablePicker => {
+export const getVariablePicker = (pickingMethod: string, data: { schedulerContextData: SchedulerContextData }): VariablePicker => {
   switch(pickingMethod) {
     case 'costs':
       return new CostBasedVariablePicker(data);
@@ -22,11 +17,13 @@ export abstract class VariablePicker {
   variables: Variable[];
   currentSchedule: CurrentSchedule;
   softConstraints: SoftConstraint[];
+  data: { schedulerContextData: SchedulerContextData };
 
-  constructor(data: VariablePickerData) {
-    this.variables = data.variables;
-    this.currentSchedule = data.currentSchedule;
-    this.softConstraints = data.softConstraints;
+  constructor(data: { schedulerContextData: SchedulerContextData }) {
+    this.data = data;
+    this.variables = data.schedulerContextData.variables;
+    this.currentSchedule = data.schedulerContextData.currentSchedule;
+    this.softConstraints = data.schedulerContextData.softConstraints;
   };
 
   abstract pick(): Variable;
@@ -43,7 +40,7 @@ export class CostBasedVariablePicker extends VariablePicker {
           selectedVariable = variable;
           break;
         }
-        variable.updateDomainCosts(this.currentSchedule, this.softConstraints);
+        variable.updateDomainCosts(this.data);
         if (variable.domain[0].cost < min) {
           selectedVariable = variable;
           min = variable.domain[0].cost;
@@ -74,7 +71,7 @@ class AverageDomainCostsVariablePicker extends VariablePicker {
     let selectedVariable: Variable;
     for (let variable of this.variables) {
       if (!variable.hasAssignedValue()) {
-        variable.updateDomainCosts(this.currentSchedule, this.softConstraints);
+        variable.updateDomainCosts(this.data);
         let averageDomainCosts = variable.domain.reduce(
           (accumalator, courseGroup) => {
             return accumalator + courseGroup.cost

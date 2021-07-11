@@ -2,7 +2,7 @@ import { ReplaySubject } from 'rxjs';
 import { Variable, CurrentSchedule, CourseGroup } from './models';
 import { SchedulerData, RegistredGroup, SoftConstraint } from './types';
 import { SchedulerSnapshot } from './types/SchedulerSnapshot';
-import { getVariablePicker, VariablePickerData, SchedulerContextData } from './services'
+import { getVariablePicker, SchedulerContextData } from './services'
 
 export class Scheduler {
   variables: Variable[];
@@ -120,7 +120,7 @@ export class Scheduler {
   };
 
   private pickVariable = (): Variable => {
-    return getVariablePicker(this.variablePickingMethod, this.variablePickerData()).pick();
+    return getVariablePicker(this.variablePickingMethod, this.schedulerContextData()).pick();
   };
 
   private allVariablesHasAssignedValue = (): boolean => {
@@ -142,14 +142,6 @@ export class Scheduler {
       currentVariable: JSON.parse(JSON.stringify(currentVariable)),
       variables: JSON.parse(JSON.stringify(this.variables)),
     });
-  };
-
-  private variablePickerData = (): VariablePickerData => {
-    return {
-      variables: this.variables,
-      currentSchedule: this.currentSchedule,
-      softConstraints: this.softConstraints
-    }
   };
 
   private schedulerContextData = (): {

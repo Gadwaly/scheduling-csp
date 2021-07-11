@@ -43,6 +43,7 @@ export class CourseGroup {
   };
 
   private setReservedTimeSlots = (): void => {
+    this.reservedTimeSlots = {};
     this.periods.forEach((period) => {
       for(let i = period[0]; i < period[1] + 1; i++){
         this.reservedTimeSlots[i] = true;
@@ -82,13 +83,13 @@ export class CourseGroup {
   };
 
   clashesWithSpecificGroup = (group: CourseGroup): boolean => {
-    group.periods.forEach((period) => {
+    return group.periods.some((period) => {
       for(let i = period[0]; i < period[1] + 1; i++){
         if(this.reservedTimeSlots[i])
           return true;
       }
-    })
-    return false;
+      return false;
+    });
   };
 
   updateCost = (data: { schedulerContextData: SchedulerContextData }): void => {
