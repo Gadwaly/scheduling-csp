@@ -1,7 +1,7 @@
 import { CurrentSchedule } from "../models";
 import { SoftConstraint, dayNumber } from "../types";
 
-export class ScheduleCostCalculator {
+export class ScheduleScoreCalculator {
   private currentSchedule: CurrentSchedule;
   private softConstraints: SoftConstraint[];
   private busyDays: number[];
@@ -113,7 +113,9 @@ export class ScheduleCostCalculator {
     let gaps = 0;
     let busyDays: number[] = this.getBusyDays();
 
-    busyDays.forEach((day) => {
+    busyDays.forEach((isBusy, day) => {
+      if(isBusy){
+      console.log(day,isBusy)
       let firstPeriod = day * 12 + 11,
         lastPeriod = day * 12;
 
@@ -126,6 +128,7 @@ export class ScheduleCostCalculator {
 
       for (let i = firstPeriod; i < lastPeriod; i++)
         if (!this.currentSchedule.schedule[i]) gaps++;
+      }
     });
 
     if (log)
