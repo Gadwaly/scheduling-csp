@@ -3,6 +3,7 @@ import { Variable, CurrentSchedule, CourseGroup } from './models';
 import { SchedulerData, RegistredGroup, SoftConstraint } from './types';
 import { SchedulerSnapshot } from './types/SchedulerSnapshot';
 import { getVariablePicker, SchedulerContextData } from './services'
+import { ScheduleCostCalculator } from './services/ScheduleScoreCalculator';
 
 export class Scheduler {
   variables: Variable[];
@@ -61,6 +62,7 @@ export class Scheduler {
       firstCSP = false
     }while(!this.allVariablesHasAssignedValue())
     this.improveAssignedValues();
+    this.updateCurrentSchedule();
     return this.getFinalSchedule();
   };
 
@@ -161,10 +163,17 @@ export class Scheduler {
       }
     }
   };
+
+  getCurrentScore(){
+    let scoreCaclculator = new ScheduleCostCalculator(this.currentSchedule, this.softConstraints)
+    let scoreAfter = scoreCaclculator.calculate()
+    return scoreAfter
+  }
 };
 
 
 class TempScheduler extends Scheduler{
+  scheduleScoreBefore: number;
 
   constructor(mainScheduler: Scheduler){
       super({softConstraints: mainScheduler.softConstraints, variablePickingMethod: mainScheduler.variablePickingMethod})
@@ -192,9 +201,11 @@ class TempScheduler extends Scheduler{
   }
 
   tryBestDiscarded(){
+    // Assigns the discarded course group with the lowest 
+    // then tries to registers the remaining variables
     let minCost = Number.MAX_SAFE_INTEGER;
     let minCostCourseGroup = null
-    let minCostVariable = null
+    let minCostVariable: Variable = null
     this.variables.forEach(variable => {
       variable.domain.forEach(courseGroup => {
         if(courseGroup.discarded()){
@@ -208,18 +219,21 @@ class TempScheduler extends Scheduler{
         }
       })
     })
+    // Resets every variable whose assigned value clashes with the best discarded group
     this.variables.forEach(variable => {
       if(variable.assignedValue.clashingCourseGroups.indexOf(minCostCourseGroup)){
         variable.resetAssignedValue()
       }
     })
+    // Assigning the best discarded group
     minCostVariable.assignedValue = minCostCourseGroup
     this.updateCurrentSchedule()
-    minCostVariable.getClashingCourseGroups(this.currentSchedule);
     for (let variable of this.variables) {
       if (variable !== minCostVariable) {
         const clashingCourseGroups = variable.getClashingCourseGroups(this.currentSchedule);
         minCostVariable.assignedValue.addToClashingCourseGroups(clashingCourseGroups);
+        // if assigning the best discarded group prevented the registartion of another 
+        // course, terminate and return false
         if (!variable.hasAssignedValue() && variable.hasEmptyDomain()) {
           return false;
         }
@@ -227,6 +241,33 @@ class TempScheduler extends Scheduler{
     }
     this.csp();
     this.improveAssignedValues();
-    return this.variables
+    this.updateCurrentSchedule();    
+    if (this.getCurrentScore() > this.scheduleScoreBefore){
+      return {variables: this.variables, currentSchedule: this.variables}
+    }else{
+      return false
+    }
+  }
+
+  tryWorstAssigned(){
+    let maxCost = 0;
+    let maxCostVariable: Variable = null
+    this.variables.forEach(variable => {
+      variable.assignedValue.updateCost(this.schedulerContextData())
+      const assignedGroupCost = variable.assignedValue.cost
+      if(assignedGroupCost > maxCost){
+        maxCost = assignedGroupCost
+        maxCostVariable = variable
+      }
+    })
+    maxCostVariable.resetAssignedValue()
+    this.updateCurrentSchedule()
+    this.csp();
+    this.updateCurrentSchedule()
+    if (this.getCurrentScore() > this.scheduleScoreBefore){
+      return {variables: this.variables, currentSchedule: this.variables}
+    }else{
+      return false
+    }
   }
 }
