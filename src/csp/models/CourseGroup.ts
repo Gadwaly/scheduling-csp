@@ -1,6 +1,6 @@
 import { CurrentSchedule } from ".";
-import { Period, SoftConstraint, dayNumber } from "../types";
-import { CostCalculator, CostCalculatorData } from '../services';
+import { Period, dayNumber } from "../types";
+import { CostCalculator, SchedulerContextData, SoftConstraintsCostCalculatorData } from '../services';
 
 interface PeriodsIds {
   tutorial?: string | null;
@@ -89,9 +89,8 @@ export class CourseGroup {
     return false;
   };
 
-  updateCost = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
-    this.cost = new CostCalculator(this.costCalculatorData())
-    .calculate(currentSchedule, softConstraints);
+  updateCost = (data: { schedulerContextData: SchedulerContextData }): void => {
+    this.cost = new CostCalculator({ ...this.softConstraintsCostCalculatorData(), ...data }).calculate(this);
   };
 
   clone = (): CourseGroup => {
@@ -99,11 +98,15 @@ export class CourseGroup {
     return clonedGroup
   }
 
-  costCalculatorData = (): CostCalculatorData => {
+  softConstraintsCostCalculatorData = (): {
+    softConstraintsCostCalculatorData: SoftConstraintsCostCalculatorData;
+  } => {
     return {
-      periods: this.periods,
-      course: this.course,
-      instructor: this.instructor
+      softConstraintsCostCalculatorData: {
+        periods: this.periods,
+        course: this.course,
+        instructor: this.instructor
+      }
     }
   };
 };

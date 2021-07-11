@@ -2,7 +2,7 @@ import { ReplaySubject } from 'rxjs';
 import { Variable, CurrentSchedule } from './models';
 import { SchedulerData, RegistredGroup, SoftConstraint } from './types';
 import { SchedulerSnapshot } from './types/SchedulerSnapshot';
-import { getVariablePicker, VariablePickerData } from './services'
+import { getVariablePicker, VariablePickerData, SchedulerContextData } from './services'
 
 export class Scheduler {
   variables: Variable[];
@@ -99,7 +99,7 @@ export class Scheduler {
     while(this.variables.length !== notChangedVariables) {
       notChangedVariables = 0;
       for (let variable of this.variables) {
-        variable.updateDomainCosts(this.currentSchedule, this.softConstraints);
+        variable.updateDomainCosts(this.schedulerContextData());
         for(let group of variable.availableDomainGroups()) {
           if (group.cost < variable.assignedValue.cost) {
             variable.resetAssignedValue();
@@ -149,6 +149,19 @@ export class Scheduler {
       variables: this.variables,
       currentSchedule: this.currentSchedule,
       softConstraints: this.softConstraints
+    }
+  };
+
+  private schedulerContextData = (): {
+    schedulerContextData: SchedulerContextData;
+  } => {
+    return {
+      schedulerContextData: {
+        variables: this.variables,
+        currentSchedule: this.currentSchedule,
+        softConstraints: this.softConstraints,
+        groupOrderingMethods: this.groupOrderingMethods
+      }
     }
   };
 };

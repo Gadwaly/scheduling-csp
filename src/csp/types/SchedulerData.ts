@@ -5,4 +5,5 @@ export interface SchedulerData {
   variables: Variable[];
   softConstraints: SoftConstraint[];
   variablePickingMethod?: string;
+  groupOrderingMethods?: string[];
 };
