@@ -1,7 +1,7 @@
 import { CurrentSchedule } from "../models";
 import { SoftConstraint, dayNumber } from "../types";
 
-export class ScheduleCostCalculator {
+export class ScheduleScoreCalculator {
   private currentSchedule: CurrentSchedule;
   private softConstraints: SoftConstraint[];
   private busyDays: number[];
