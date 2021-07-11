@@ -54,7 +54,7 @@ export class SoftConstraintsBasedCostCalculator {
   };
 
   private maxDays = (currentSchedule: CurrentSchedule, internalWieght = 1) => {
-    return -this.minDays(currentSchedule) * internalWieght;
+    return -this.minDays(currentSchedule, 1) * internalWieght;
   };
 
   private earlyPeriods = (_currentSchedule: CurrentSchedule, internalWieght = 1 / 5) => {
@@ -70,7 +70,7 @@ export class SoftConstraintsBasedCostCalculator {
   };
 
   private latePeriods = (currentSchedule: CurrentSchedule, internalWieght = 1 / 5) => {
-    return -this.earlyPeriods(currentSchedule) * internalWieght;
+    return -this.earlyPeriods(currentSchedule, 1) * internalWieght;
   };
 
   private gaps = (currentSchedule: CurrentSchedule, internalWieght = 1 / 3) => {
@@ -105,7 +105,7 @@ export class SoftConstraintsBasedCostCalculator {
   };
 
   private gapsPlus = (currentSchedule: CurrentSchedule, internalWieght = 1 / 3) => {
-    return -this.gaps(currentSchedule) * internalWieght;
+    return -this.gaps(currentSchedule, 1) * internalWieght;
   };
 
   private daysOff = (
@@ -123,16 +123,20 @@ export class SoftConstraintsBasedCostCalculator {
       }
     }
 
-    let hits = 0;
+    let hits = 0,
+      hit = false;
     for (let i = 0; i < days.length; i++) {
       for (let j = 0; j < this.periods.length; j++) {
         const period = this.periods[j];
         let dayIndex = Math.floor(period[0] / 12);
         if (dayIndex === dayNumber[days[i]] && !busyDays[i]) {
           hits++;
+          hit = true;
           break;
         }
       }
+      if (!hit) hits--;
+      hit = false;
     }
 
     return hits * internalWieght;
@@ -143,11 +147,11 @@ export class SoftConstraintsBasedCostCalculator {
     instructors: any,
     internalWieght = 2
   ) => {
-    if ( !this.instructor ||
-      !instructors[this.course] ||
-      this.instructor === instructors[this.course].instructor
-    )
-      return 0;
-    return 1 * internalWieght;
+    if (this.instructor && instructors[this.course]) {
+      if (this.instructor === instructors[this.course].instructor)
+        return -1 * internalWieght;
+      return 1 * internalWieght;
+    }
+    return 0; 
   };
 };
