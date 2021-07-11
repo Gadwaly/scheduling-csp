@@ -113,7 +113,9 @@ export class ScheduleScoreCalculator {
     let gaps = 0;
     let busyDays: number[] = this.getBusyDays();
 
-    busyDays.forEach((day) => {
+    busyDays.forEach((isBusy, day) => {
+      if(isBusy){
+      console.log(day,isBusy)
       let firstPeriod = day * 12 + 11,
         lastPeriod = day * 12;
 
@@ -126,6 +128,7 @@ export class ScheduleScoreCalculator {
 
       for (let i = firstPeriod; i < lastPeriod; i++)
         if (!this.currentSchedule.schedule[i]) gaps++;
+      }
     });
 
     if (log)
