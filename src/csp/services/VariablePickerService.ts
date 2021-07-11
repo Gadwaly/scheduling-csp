@@ -61,6 +61,7 @@ class MinValuesBasedVariablePicker extends VariablePicker {
         min = variable.domain.length;
       }
     });
+    selectedVariable.updateDomainCosts(this.data);
     return selectedVariable;
   };
 };
