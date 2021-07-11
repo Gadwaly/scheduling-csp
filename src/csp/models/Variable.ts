@@ -1,5 +1,6 @@
 import { CourseGroup, CurrentSchedule } from '.';
-import { RegistredGroup, SoftConstraint } from '../types';
+import { RegistredGroup } from '../types';
+import { SchedulerContextData } from '../services';
 
 export class Variable {
   courseName: string;
@@ -33,10 +34,8 @@ export class Variable {
     return clashingCourseGroups;
   };
 
-  updateDomainCosts = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
-    this.domain.forEach((courseGroup) =>
-      courseGroup.updateCost(currentSchedule, softConstraints)
-    );
+  updateDomainCosts = (data: { schedulerContextData: SchedulerContextData }): void => {
+    this.domain.forEach((courseGroup) => courseGroup.updateCost(data));
 
     this.domain.sort((group1: CourseGroup, group2: CourseGroup) => {
       return group1.cost - group2.cost;

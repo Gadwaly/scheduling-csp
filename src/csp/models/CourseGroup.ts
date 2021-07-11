@@ -1,6 +1,6 @@
 import { CurrentSchedule } from ".";
-import { Period, SoftConstraint, dayNumber } from "../types";
-import { CostCalculator, CostCalculatorData } from '../services';
+import { Period, dayNumber } from "../types";
+import { CostCalculator, SchedulerContextData, SoftConstraintsCostCalculatorData } from '../services';
 
 interface PeriodsIds {
   tutorial?: string | null;
@@ -17,6 +17,7 @@ export class CourseGroup {
   instructor!: string;
   course!: string;
   clashingCourseGroups: CourseGroup[];
+  reservedTimeSlots: object;
 
   constructor(groupNum: string, group: Period[], instructor: string, course: string) {
     this.groupNum = groupNum;
@@ -24,6 +25,7 @@ export class CourseGroup {
     this.instructor = instructor;
     this.periodsIds = { tutorial: null, lab: null };
     this.setPeriods(group.filter((period: Period) => period !== undefined));
+    this.setReservedTimeSlots();
     this.cost = 0;
     this.discardingCounter = 0;
     this.clashingCourseGroups = [];
@@ -39,6 +41,14 @@ export class CourseGroup {
       return [dayBase + (period.from - 1), dayBase + (period.to - 1)];
     })
   };
+
+  private setReservedTimeSlots = (): void => {
+    this.periods.forEach((period) => {
+      for(let i = period[0]; i < period[1] + 1; i++){
+        this.reservedTimeSlots[i] = true;
+      }
+    });
+  }
 
   addToClashingCourseGroups = (groups: CourseGroup[]): void => {
     groups.forEach((group) => group.incrementDiscardingCounter());
@@ -71,9 +81,18 @@ export class CourseGroup {
     });
   };
 
-  updateCost = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): void => {
-    this.cost = new CostCalculator(this.costCalculatorData())
-    .calculate(currentSchedule, softConstraints);
+  clashesWithSpecificGroup = (group: CourseGroup): boolean => {
+    group.periods.forEach((period) => {
+      for(let i = period[0]; i < period[1] + 1; i++){
+        if(this.reservedTimeSlots[i])
+          return true;
+      }
+    })
+    return false;
+  };
+
+  updateCost = (data: { schedulerContextData: SchedulerContextData }): void => {
+    this.cost = new CostCalculator({ ...this.softConstraintsCostCalculatorData(), ...data }).calculate(this);
   };
 
   clone = (): CourseGroup => {
@@ -82,11 +101,15 @@ export class CourseGroup {
     return clonedGroup
   }
 
-  costCalculatorData = (): CostCalculatorData => {
+  softConstraintsCostCalculatorData = (): {
+    softConstraintsCostCalculatorData: SoftConstraintsCostCalculatorData;
+  } => {
     return {
-      periods: this.periods,
-      course: this.course,
-      instructor: this.instructor
+      softConstraintsCostCalculatorData: {
+        periods: this.periods,
+        course: this.course,
+        instructor: this.instructor
+      }
     }
   };
 };

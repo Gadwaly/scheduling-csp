@@ -1,155 +1,59 @@
-import { CurrentSchedule } from '../models';
-import { SoftConstraint, dayNumber } from '../types';
+import { CurrentSchedule, Variable, CourseGroup } from "../models";
+import { SoftConstraint } from "../types";
+import { SoftConstraintsCostCalculatorData, SoftConstraintsBasedCostCalculator } from '.';
 
-export interface CostCalculatorData {
-  periods: number[][];
-  course: string;
-  instructor: string;
+export interface SchedulerContextData {
+  variables: Variable[];
+  currentSchedule: CurrentSchedule;
+  softConstraints: SoftConstraint[];
+  groupOrderingMethods: string[];
 };
 
+export interface CostCalculatorData {
+  schedulerContextData: SchedulerContextData;
+  softConstraintsCostCalculatorData: SoftConstraintsCostCalculatorData;
+};
 
 export class CostCalculator {
-
-  private periods: number[][];
-  private course: string;
-  private instructor: string;
-
+  private schedulerContextData: SchedulerContextData;
+  private softConstraintsCostCalculatorData: SoftConstraintsCostCalculatorData;
   constructor(data: CostCalculatorData) {
-    this.periods = data.periods;
-    this.course = data.course;
-    this.instructor = data.instructor;
+    this.softConstraintsCostCalculatorData = data.softConstraintsCostCalculatorData;
+    this.schedulerContextData = data.schedulerContextData;
   };
 
-  calculate = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): number => {
-    return softConstraints.reduce(
-      (accumalator, softConstraint) => {
-        return (
-          accumalator +
-          softConstraint.priority *
-            this[softConstraint.type](currentSchedule, softConstraint.param)
-        );
-      },
-      0
-    );
+  calculate(group: CourseGroup) {
+    let cost = new SoftConstraintsBasedCostCalculator(this.softConstraintsCostCalculatorData)
+    .calculate(this.schedulerContextData.currentSchedule, this.schedulerContextData.softConstraints);
+    return this.applyGroupOrderingMethods(cost, group);
   };
 
-  private minDays = (currentSchedule: CurrentSchedule, internalWieght = 1) => {
-    let addedDaysCount = 0;
-    const busyDays = new Array(6).fill(false);
-    for (let i = 0; i < 6; i++) {
-      for (let j = i * 12; j < i * 12 + 12; j++) {
-        if (currentSchedule.schedule[j]) {
-          busyDays[i] = true;
-          break;
-        }
+  private applyGroupOrderingMethods = (cost: number, group: CourseGroup): number => {
+    this.schedulerContextData.groupOrderingMethods.forEach((method) => {
+      cost = this[method](group);
+    });
+    return cost;
+  }
+
+  private considerDiscardedAverageCostsWithTheirPercentage = (group: CourseGroup): number => {
+    const DISCARDING_GROUPS_AVERAGE_COSTS_THRESHOLD = 0;
+
+    const variables = this.schedulerContextData.variables;
+    let availableGroups: CourseGroup[];
+    let discardedGroups: CourseGroup[];
+    variables.forEach((variable) => availableGroups.push(...variable.availableDomainGroups()));
+    availableGroups.forEach((courseGroup) => {
+      if(courseGroup !== group && group.clashesWithSpecificGroup(courseGroup)) {
+        discardedGroups.push(courseGroup);
       }
+    });
+    const discardingPercent = discardedGroups.length / availableGroups.length;
+    let averageCosts = 1;
+    if(discardingPercent >= DISCARDING_GROUPS_AVERAGE_COSTS_THRESHOLD) {
+      averageCosts = discardedGroups.reduce((accumalator, courseGroup) => {
+        return accumalator + courseGroup.cost
+      }, 0) / discardedGroups.length;
     }
-
-    this.periods.forEach((period) => {
-      let dayIndex = Math.floor(period[0] / 12);
-      if (!busyDays[dayIndex]) {
-        addedDaysCount++;
-        busyDays[dayIndex] = true;
-      }
-    });
-    return addedDaysCount * internalWieght;
-  };
-
-  private maxDays = (currentSchedule: CurrentSchedule, internalWieght = 1) => {
-    return -this.minDays(currentSchedule) * internalWieght;
-  };
-
-  private earlyPeriods = (_currentSchedule: CurrentSchedule, internalWieght = 1 / 5) => {
-    let earliness = 0;
-    this.periods.forEach((period) => {
-      const day = Math.floor(period[0] / 12),
-        from = period[0] - 12 * day + 1;
-
-      earliness += from;
-    });
-
-    return earliness * internalWieght;
-  };
-
-  private latePeriods = (currentSchedule: CurrentSchedule, internalWieght = 1 / 5) => {
-    return -this.earlyPeriods(currentSchedule) * internalWieght;
-  };
-
-  private gaps = (currentSchedule: CurrentSchedule, internalWieght = 1 / 3) => {
-    let gaps = 0;
-    let schedule = [...currentSchedule.schedule];
-    let periodDays: number[] = [];
-
-    this.periods.forEach((period) => {
-      const day = Math.floor(period[0] / 12),
-        from = period[0],
-        to = period[1];
-
-      for (let i = from; i <= to; i++) schedule[i] = true;
-
-      periodDays.push(day);
-    });
-
-    periodDays.forEach((day) => {
-      let firstPeriod = day * 12 + 11,
-        lastPeriod = day * 12;
-
-      for (let i = day * 12; i < day * 12 + 12; i++) {
-        if (schedule[i]) {
-          if (firstPeriod > i) firstPeriod = i;
-          if (lastPeriod < i) lastPeriod = i;
-        }
-      }
-
-      for (let i = firstPeriod; i < lastPeriod; i++) if (!schedule[i]) gaps++;
-    });
-    return gaps * internalWieght;
-  };
-
-  private gapsPlus = (currentSchedule: CurrentSchedule, internalWieght = 1 / 3) => {
-    return -this.gaps(currentSchedule) * internalWieght;
-  };
-
-  private daysOff = (
-    currentSchedule: CurrentSchedule,
-    days: string[],
-    internalWieght = 3
-  ) => {
-    const busyDays = new Array(6).fill(false);
-    for (let i = 0; i < 6; i++) {
-      for (let j = i * 12; j < i * 12 + 12; j++) {
-        if (currentSchedule.schedule[j]) {
-          busyDays[i] = true;
-          break;
-        }
-      }
-    }
-
-    let hits = 0;
-    for (let i = 0; i < days.length; i++) {
-      for (let j = 0; j < this.periods.length; j++) {
-        const period = this.periods[j];
-        let dayIndex = Math.floor(period[0] / 12);
-        if (dayIndex === dayNumber[days[i]] && !busyDays[i]) {
-          hits++;
-          break;
-        }
-      }
-    }
-
-    return hits * internalWieght;
-  };
-
-  private courseInstructor = (
-    _currentSchedule: CurrentSchedule,
-    instructors: any,
-    internalWieght = 2
-  ) => {
-    if ( !this.instructor ||
-      !instructors[this.course] ||
-      this.instructor === instructors[this.course].instructor
-    )
-      return 0;
-    return 1 * internalWieght;
-  };
+    return group.cost * averageCosts * discardingPercent;
+  }
 };
