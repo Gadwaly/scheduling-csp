@@ -1,5 +1,5 @@
 import { ReplaySubject } from 'rxjs';
-import { Variable, CurrentSchedule } from './models';
+import { Variable, CurrentSchedule, CourseGroup } from './models';
 import { SchedulerData, RegistredGroup, SoftConstraint } from './types';
 import { SchedulerSnapshot } from './types/SchedulerSnapshot';
 import { getVariablePicker, VariablePickerData, SchedulerContextData } from './services'
@@ -14,13 +14,12 @@ export class Scheduler {
   groupOrderingMethods: string[];
 
   constructor(data: SchedulerData) {
-    this.variables = data.variables;
-    this.softConstraints = data.softConstraints;
+    this.variables = data?.variables;
+    this.softConstraints = data?.softConstraints;
     this.currentSchedule = new CurrentSchedule();
     this.scheduleUpdated = new ReplaySubject();
-    this.setVariablePickingMethod(data.variablePickingMethod);
+    this.setVariablePickingMethod(data?.variablePickingMethod);
     this.setGroupOrderingMethods(data.groupOrderingMethods);
-    this.createSnapshot();
   };
 
   setVariablePickingMethod = (method = 'min-values'): void => {
@@ -50,10 +49,11 @@ export class Scheduler {
         // Remove the variable with the highest backtrackingCauseCount
         const maxBacktrackingCauseCount = Math.max(...this.variables.map(variable => variable.backtrackingCauseCount));
         const variableToBeRemovedCode = this.variables.find(variable => variable.backtrackingCauseCount === maxBacktrackingCauseCount).courseCode;
-        this.restoreSnapshot(0)
         this.variables = this.variables.filter(variable => variable.courseCode !== variableToBeRemovedCode)
-        this.createSnapshot();
-        this.setVariablePickingMethod()
+        this.variables.forEach((variable) => {
+          variable.resetState()
+        })
+        this.currentSchedule = new CurrentSchedule()
       }
       this.csp();
       firstCSP = false
@@ -86,7 +86,7 @@ export class Scheduler {
         const clashingCourseGroups = variable.getClashingCourseGroups(this.currentSchedule);
         currentVariable.assignedValue.addToClashingCourseGroups(clashingCourseGroups);
         if (!variable.hasAssignedValue() && variable.hasEmptyDomain()) {
-          variable.backtrackingCauseCount++;
+          currentVariable.backtrackingCauseCount++;
           return false;
         }
       }
@@ -165,3 +165,31 @@ export class Scheduler {
     }
   };
 };
+
+
+class TempScheduler extends Scheduler{
+
+  constructor(mainSchedulerData: SchedulerData){
+      super({softConstraints: mainSchedulerData.softConstraints, variablePickingMethod: mainSchedulerData.variablePickingMethod})
+      this.variables = this.cloneMainSchedulerVariables(mainSchedulerData.variables)
+  }
+
+  cloneMainSchedulerVariables(mainSchedulerVariables: Variable[]){
+      let clonedVariables = mainSchedulerVariables.map((variable) => variable.clone())
+      let courseGroupsMap: {[groupID: string]: CourseGroup} = {}
+      let variablesMap: {[courseCode: string]: Variable} = {}
+      clonedVariables.forEach((variable) => {
+          variablesMap[variable.courseCode] = variable
+          variable.domain.forEach((cGroup) => {
+              courseGroupsMap[cGroup.uniqueID] = cGroup
+          })
+      })
+      mainSchedulerVariables.forEach((variable) => {
+          variablesMap[variable.courseCode].assignedValue = variable.assignedValue ? courseGroupsMap[variable.assignedValue.uniqueID] : null;
+          variable.domain.forEach((cGroup) => {
+              courseGroupsMap[cGroup.uniqueID].clashingCourseGroups = cGroup.clashingCourseGroups.map((clashingGroup) => courseGroupsMap[clashingGroup.uniqueID])
+          })
+      })
+      return clonedVariables
+  }
+}

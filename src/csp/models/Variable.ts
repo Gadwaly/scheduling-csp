@@ -18,8 +18,10 @@ export class Variable {
   };
 
   resetAssignedValue = () => {
-    this.assignedValue.resetClashingCourseGroups();
-    this.assignedValue = null;
+    if(this.assignedValue){
+      this.assignedValue.resetClashingCourseGroups();
+      this.assignedValue = null;
+    }
   }
 
   getClashingCourseGroups = (currentSchedule: CurrentSchedule): CourseGroup[] => {
@@ -57,9 +59,14 @@ export class Variable {
     }
   };
 
+  resetState = (): void => {
+    this.resetAssignedValue()
+    this.backtrackingCauseCount = 0
+  }
+
   clone = (): Variable => {
     let clonedVariable = Object.assign(new Variable(null, null, []), JSON.parse(JSON.stringify(this)))
-    clonedVariable.assignedValue = this.assignedValue?.clone()
+    clonedVariable.assignedValue = this.assignedValue?.uniqueID
     clonedVariable.domain = this.domain.map(cGroup => cGroup.clone())
     return clonedVariable
   }
