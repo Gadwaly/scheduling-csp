@@ -11,6 +11,7 @@ export class Scheduler {
   softConstraints: SoftConstraint[];
   schedulerSnapshots: SchedulerSnapshot[];
   variablePickingMethod: string;
+  groupOrderingMethods: string[];
 
   constructor(data: SchedulerData) {
     this.variables = data.variables;
@@ -18,11 +19,16 @@ export class Scheduler {
     this.currentSchedule = new CurrentSchedule();
     this.scheduleUpdated = new ReplaySubject();
     this.setVariablePickingMethod(data.variablePickingMethod);
+    this.setGroupOrderingMethods(data.groupOrderingMethods);
     this.createSnapshot();
   };
 
   setVariablePickingMethod = (method = 'min-values'): void => {
     this.variablePickingMethod = method;
+  };
+
+  setGroupOrderingMethods = (methods = ['considerDiscardedAverageCostsWithTheirPercentage']): void => {
+    this.groupOrderingMethods = methods;
   };
 
   createSnapshot = () => {
