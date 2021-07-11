@@ -68,7 +68,7 @@ export class Scheduler {
     });
   };
 
-  private csp = (): void => {
+  protected csp = (): void => {
     if (this.allVariablesHasAssignedValue()) return;
     const currentVariable = this.pickVariable();
     for (let group of currentVariable.availableDomainGroups()) {
@@ -94,7 +94,7 @@ export class Scheduler {
     return true;
   };
 
-  private improveAssignedValues = () => {
+  protected improveAssignedValues = () => {
     let notChangedVariables = 0;
     while(this.variables.length !== notChangedVariables) {
       notChangedVariables = 0;
@@ -127,9 +127,11 @@ export class Scheduler {
     return this.variables.every((variable) => variable.hasAssignedValue());
   };
 
-  private updateCurrentSchedule = (currentVariable: Variable): void => {
+  protected updateCurrentSchedule = (currentVariable?: Variable): void => {
     this.currentSchedule.update(this.currentAssignedValues());
-    this.updateVisualizer(currentVariable);
+    if(currentVariable){
+      this.updateVisualizer(currentVariable);
+    }
   };
 
   private currentAssignedValues = () => {
@@ -161,9 +163,10 @@ export class Scheduler {
 
 class TempScheduler extends Scheduler{
 
-  constructor(mainSchedulerData: SchedulerData){
-      super({softConstraints: mainSchedulerData.softConstraints, variablePickingMethod: mainSchedulerData.variablePickingMethod})
-      this.variables = this.cloneMainSchedulerVariables(mainSchedulerData.variables)
+  constructor(mainScheduler: Scheduler){
+      super({softConstraints: mainScheduler.softConstraints, variablePickingMethod: mainScheduler.variablePickingMethod})
+      this.variables = this.cloneMainSchedulerVariables(mainScheduler.variables)
+      this.updateCurrentSchedule()
   }
 
   cloneMainSchedulerVariables(mainSchedulerVariables: Variable[]){
@@ -183,5 +186,44 @@ class TempScheduler extends Scheduler{
           })
       })
       return clonedVariables
+  }
+
+  tryBestDiscarded(){
+    let minCost = Number.MAX_SAFE_INTEGER;
+    let minCostCourseGroup = null
+    let minCostVariable = null
+    this.variables.forEach(variable => {
+      variable.domain.forEach(courseGroup => {
+        if(courseGroup.discarded()){
+          courseGroup.updateCost(this.currentSchedule, this.softConstraints)
+          const totalGroupCost = courseGroup.cost * courseGroup.discardingCounter
+          if(totalGroupCost < minCost){
+            minCost = totalGroupCost
+            minCostCourseGroup = courseGroup
+            minCostVariable = variable
+          }
+        }
+      })
+    })
+    this.variables.forEach(variable => {
+      if(variable.assignedValue.clashingCourseGroups.indexOf(minCostCourseGroup)){
+        variable.resetAssignedValue()
+      }
+    })
+    minCostVariable.assignedValue = minCostCourseGroup
+    this.updateCurrentSchedule()
+    minCostVariable.getClashingCourseGroups(this.currentSchedule);
+    for (let variable of this.variables) {
+      if (variable !== minCostVariable) {
+        const clashingCourseGroups = variable.getClashingCourseGroups(this.currentSchedule);
+        minCostVariable.assignedValue.addToClashingCourseGroups(clashingCourseGroups);
+        if (!variable.hasAssignedValue() && variable.hasEmptyDomain()) {
+          return false;
+        }
+      }
+    }
+    this.csp();
+    this.improveAssignedValues();
+    return this.variables
   }
 }
