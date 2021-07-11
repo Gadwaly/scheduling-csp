@@ -226,8 +226,4 @@ class TempScheduler extends Scheduler{
     this.improveAssignedValues();
     return this.variables
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 493fd8b619e933b6a375892c202efd725e1a710a
