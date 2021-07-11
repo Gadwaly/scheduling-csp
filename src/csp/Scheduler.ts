@@ -146,7 +146,7 @@ export class Scheduler {
     });
   };
 
-  private schedulerContextData = (): {
+  schedulerContextData = (): {
     schedulerContextData: SchedulerContextData;
   } => {
     return {
@@ -195,7 +195,7 @@ class TempScheduler extends Scheduler{
     this.variables.forEach(variable => {
       variable.domain.forEach(courseGroup => {
         if(courseGroup.discarded()){
-          courseGroup.updateCost(this.currentSchedule, this.softConstraints)
+          courseGroup.updateCost(this.schedulerContextData())
           const totalGroupCost = courseGroup.cost * courseGroup.discardingCounter
           if(totalGroupCost < minCost){
             minCost = totalGroupCost
