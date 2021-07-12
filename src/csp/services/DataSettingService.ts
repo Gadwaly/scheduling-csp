@@ -82,7 +82,7 @@ export const setSoftConstraints = (preferencesData: PreferencesData): SoftConstr
     } else { // courses instructor
       softConstraints.push({
         type: preferencesMap[preferenceName],
-        priority: +3,
+        priority: +1,
         param: preference
       });
     }
