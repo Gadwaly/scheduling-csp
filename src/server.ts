@@ -1,7 +1,8 @@
 import express, { Application, Request, Response } from "express";
 import morgan from "morgan";
 import dotenv from "dotenv";
-import { register } from "./registrationController";
+import { register } from "./controllers/registrationController";
+import { benchmark } from './controllers/benchmarkController';
 
 dotenv.config();
 
@@ -20,6 +21,12 @@ app.post('/register', (req: Request, res: Response) => {
 
 app.post('/reset', (_req: Request, res: Response) => {
   res.status(200).send('Scheduler has been reset');
+});
+
+app.post('/score', (req: Request, res: Response) => {
+  const body = req.body;
+  const response = benchmark(body);
+  res.send(response);
 });
 
 app.post('/*', (_req: Request, res: Response) => {

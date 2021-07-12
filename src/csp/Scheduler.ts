@@ -12,6 +12,7 @@ export class Scheduler {
   schedulerSnapshots: SchedulerSnapshot[];
   variablePickingMethod: string;
   groupOrderingMethods: string[];
+  scheduleStateCounter: number;
 
   constructor(data: SchedulerData) {
     this.variables = data?.variables;
@@ -20,6 +21,7 @@ export class Scheduler {
     this.scheduleUpdated = new ReplaySubject();
     this.setVariablePickingMethod(data?.variablePickingMethod);
     this.setGroupOrderingMethods(data.groupOrderingMethods);
+    this.scheduleStateCounter = 0;
   };
 
   setVariablePickingMethod = (method = 'min-values'): void => {
@@ -36,8 +38,8 @@ export class Scheduler {
       currentSchedule: new CurrentSchedule()
     }]
   }
-
   restoreSnapshot = (snapshotIndex: number) => {
+
     this.variables = this.schedulerSnapshots[snapshotIndex].variables;
     this.currentSchedule = this.schedulerSnapshots[snapshotIndex].currentSchedule;
   }
@@ -128,6 +130,7 @@ export class Scheduler {
   };
 
   protected updateCurrentSchedule = (currentVariable?: Variable): void => {
+    this.scheduleStateCounter++;
     this.currentSchedule.update(this.currentAssignedValues());
     if(currentVariable){
       this.updateVisualizer(currentVariable);
