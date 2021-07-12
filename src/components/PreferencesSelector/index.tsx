@@ -22,10 +22,10 @@ const PreferencesSelector = (props) => {
   const [earlyLate, setEarlyLate] = useState<any>(null);
   const [minMaxDays, setMinMaxDays] = useState<any>([]);
   const [gaps, setGaps] = useState<any>(null);
-  const [priorityDaysOff, setPriorityDaysOff] = useState<number>(2);
-  const [priorityEarlyLate, setPriorityEarlyLate] = useState<number>(2);
-  const [priorityMinMaxDays, setPriorityMinMaxDays] = useState<number>(2);
-  const [priorityGaps, setPriorityGaps] = useState<number>(2);
+  const [priorityDaysOff, setPriorityDaysOff] = useState<number>(1);
+  const [priorityEarlyLate, setPriorityEarlyLate] = useState<number>(1);
+  const [priorityMinMaxDays, setPriorityMinMaxDays] = useState<number>(1);
+  const [priorityGaps, setPriorityGaps] = useState<number>(1);
 
   useEffect(() => {
     props.buildPreferences(
