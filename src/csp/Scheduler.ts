@@ -170,6 +170,14 @@ export class Scheduler {
     scoreCaclculator.printLogs()
     return scoreAfter
   }
+
+  getScheduleStates = (): number => {
+    let result = this.scheduleStateCounter;
+    this.variables.forEach((variable) => {
+      variable.domain.forEach((group) => { result += group.updateCostCounter; });
+    });
+    return result;
+  };
 };
 
 

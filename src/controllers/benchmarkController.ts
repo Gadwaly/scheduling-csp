@@ -19,7 +19,7 @@ export const benchmark = (data: { preferences: PreferencesData, variablePickingM
     score,
     dataSettingTime,
     processingTime,
-    visits: scheduler.scheduleStateCounter
+    visits: scheduler.getScheduleStates()
   };
 };
 

@@ -18,6 +18,7 @@ export class CourseGroup {
   course!: string;
   clashingCourseGroups: CourseGroup[];
   reservedTimeSlots: object;
+  updateCostCounter: number;
 
   constructor(groupNum: string, group: Period[], instructor: string, course: string) {
     this.groupNum = groupNum;
@@ -30,6 +31,7 @@ export class CourseGroup {
     this.discardingCounter = 0;
     this.clashingCourseGroups = [];
     this.uniqueID = `${this.course}-${groupNum}${this.periodsIds.tutorial ? "-" + this.periodsIds.tutorial : ""}${this.periodsIds.lab ? "-" + this.periodsIds.lab : ""}`
+    this.updateCostCounter = 0;
   }
 
   private setPeriods = (group: Period[]): void => {
@@ -93,6 +95,7 @@ export class CourseGroup {
   };
 
   updateCost = (data: { schedulerContextData: SchedulerContextData }): void => {
+    this.updateCostCounter++;
     this.cost = new CostCalculator({ ...this.softConstraintsCostCalculatorData(), ...data }).calculate(this);
   };
 
