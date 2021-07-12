@@ -14,13 +14,13 @@ export const benchmark = (data: { preferences: PreferencesData, variablePickingM
   t1 = performance.now();
   scheduler.schedule();
   t2 = performance.now();
-  const CSPTime = t2 - t1;
+  const processingTime = t2 - t1;
   const score = new ScheduleScoreCalculator(scheduler.currentSchedule, scheduler.softConstraints).calculate();
   return {
     score,
     dataSettingTime,
-    CSPTime,
-    scheduleStates: scheduler.scheduleStateCounter
+    processingTime,
+    visits: scheduler.scheduleStateCounter
   };
 };
 
