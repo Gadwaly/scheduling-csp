@@ -20,6 +20,7 @@ export class ScheduleScoreCalculator {
   }
 
   calculate = (): number => {
+    console.log(this.softConstraints)
     return this.softConstraints.reduce((accumalator, softConstraint) => {
       return (
         accumalator +
@@ -149,14 +150,16 @@ export class ScheduleScoreCalculator {
   };
 
   private daysOff = (
-    days: string[],
     priority,
+    days: string[],
     internalWieght = 3,
     log = true
   ) => {
+    console.log('days off', days)
     const busyDays = this.getBusyDays();
     let hits = 0;
     for (let i = 0; i < days.length; i++) {
+      console.log(days, busyDays)
       if (busyDays[dayNumber[days[i]]]) {
         hits--;
         if (log)
@@ -176,11 +179,12 @@ export class ScheduleScoreCalculator {
   };
 
   private courseInstructor = (
-    instructors: any,
     priority,
+    instructors: any,
     internalWieght = 2,
     log = true
   ) => {
+    console.log('courses instructor', instructors)
     let hits = 0;
     this.currentSchedule.scheduleGroups.forEach((scheduleGroup) => {
       if (scheduleGroup.instructor && instructors[scheduleGroup.course]) {
