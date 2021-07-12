@@ -4,10 +4,10 @@ import allCourses from '../csp/allCourses.json';
 import { setData } from '../csp/services';
 import { ScheduleScoreCalculator } from '../csp/services/ScheduleScoreCalculator';
 
-export const benchmark = (preferences: PreferencesData) => {
-  const registrationData = createRegistrationData(preferences);
+export const benchmark = (data: { preferences: PreferencesData, variablePickingMethod: string }) => {
+  const registrationData = createRegistrationData(data.preferences);
   let t1 = performance.now();
-  const schedulerData = setData(registrationData, 'average-domain-costs');
+  const schedulerData = setData(registrationData, data.variablePickingMethod);
   let t2 = performance.now();
   const dataSettingTime = t2 - t1;
   const scheduler = new Scheduler(schedulerData);
@@ -25,10 +25,10 @@ export const benchmark = (preferences: PreferencesData) => {
 };
 
 const createRegistrationData = (preferences: PreferencesData): RegistrationData => {
+  const coursesArray = preferences.courses;
   const courses = [];
-  const courseCodes = Object.keys(preferences.courses);
-  courseCodes.forEach((courseCode) => {
-    courses.push({ [courseCode]: allCourses[courseCode] });
+  coursesArray.forEach((course) => {
+    courses.push({ [course.code]: allCourses[course.code] });
   });
   const table = Object.assign({}, ...courses);
   return { table, preferences };

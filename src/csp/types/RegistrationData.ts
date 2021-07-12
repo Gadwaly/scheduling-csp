@@ -27,11 +27,12 @@ export interface CoursesData {
 }
 
 export interface PreferencesData {
-  courses?: {
-    [key: string]: {
-      instructor: number | string;
-    };
-  };
+  courses?: [
+    { 
+      code: string;
+      instructor: string | number;
+    }
+  ];
   earlyOrLate?: {
     value: EarlyLateValues;
     order: number | string;
