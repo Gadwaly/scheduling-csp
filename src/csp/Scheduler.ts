@@ -103,21 +103,20 @@ export class Scheduler {
     while(this.variables.length !== notChangedVariables) {
       notChangedVariables = 0;
       for (let variable of this.variables) {
+        const previousAssignedValue = variable.assignedValue;
+        variable.resetAssignedValue();
         variable.updateDomainCosts(this.schedulerContextData());
-        for(let group of variable.availableDomainGroups()) {
-          if (group.cost < variable.assignedValue.cost) {
-            variable.resetAssignedValue();
-            variable.assignedValue = group;
-            this.updateCurrentSchedule(variable);
-            this.variables.forEach((variableItem) => {
-              variable.assignedValue
-              .addToClashingCourseGroups(variableItem.getClashingCourseGroups(this.currentSchedule));
-            });
-            this.updateVisualizer(variable);
-          } else {
-            notChangedVariables++;
-            break;
+        variable.assignedValue = variable.availableDomainGroups()[0];
+        this.updateCurrentSchedule(variable);
+        this.variables.forEach((variableItem) => {
+          if(variableItem !== variable) {
+            variable.assignedValue
+            .addToClashingCourseGroups(variableItem.getClashingCourseGroups(this.currentSchedule));
           }
+        });
+        this.updateVisualizer(variable);
+        if(variable.assignedValue === previousAssignedValue) {
+          notChangedVariables++;
         }
       }
     }
