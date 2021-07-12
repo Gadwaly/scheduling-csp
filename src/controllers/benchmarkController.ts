@@ -2,6 +2,8 @@ import { PreferencesData, RegistrationData } from '../csp/types';
 import { Scheduler } from '../csp/Scheduler';
 import allCourses from '../csp/allCourses.json';
 import { setData } from '../csp/services';
+import { ScheduleScoreCalculator } from '../csp/services/ScheduleScoreCalculator';
+import { performance } from 'perf_hooks'
 
 export const benchmark = (data: { preferences: PreferencesData, variablePickingMethod: string }) => {
   const registrationData = createRegistrationData(data.preferences);
