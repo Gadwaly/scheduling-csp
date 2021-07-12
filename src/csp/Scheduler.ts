@@ -3,7 +3,7 @@ import { Variable, CurrentSchedule, CourseGroup } from './models';
 import { SchedulerData, RegistredGroup, SoftConstraint } from './types';
 import { SchedulerSnapshot } from './types/SchedulerSnapshot';
 import { getVariablePicker, SchedulerContextData } from './services'
-import { ScheduleCostCalculator } from './services/ScheduleScoreCalculator';
+import { ScheduleScoreCalculator } from './services/ScheduleScoreCalculator';
 
 export class Scheduler {
   variables: Variable[];
@@ -165,8 +165,9 @@ export class Scheduler {
   };
 
   getCurrentScore(){
-    let scoreCaclculator = new ScheduleCostCalculator(this.currentSchedule, this.softConstraints)
+    let scoreCaclculator: ScheduleScoreCalculator = new ScheduleScoreCalculator(this.currentSchedule, this.softConstraints)
     let scoreAfter = scoreCaclculator.calculate()
+    scoreCaclculator.printLogs()
     return scoreAfter
   }
 };
