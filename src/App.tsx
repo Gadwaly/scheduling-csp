@@ -102,7 +102,7 @@ function App() {
 
   const startCSP = () => {
     setStarted(true);
-    scrollToBottom();
+    // scrollToBottom();
   };
 
   const buildPreferences = (

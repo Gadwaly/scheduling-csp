@@ -72,7 +72,9 @@ class AverageDomainCostsVariablePicker extends VariablePicker {
     let selectedVariable: Variable;
     for (let variable of this.variables) {
       if (!variable.hasAssignedValue()) {
+        console.log("IM IN")
         variable.updateDomainCosts(this.data);
+        console.log("DATA VARIABLES", this.data.schedulerContextData.variables)
         let averageDomainCosts = variable.domain.reduce(
           (accumalator, courseGroup) => {
             return accumalator + courseGroup.cost
@@ -84,6 +86,7 @@ class AverageDomainCostsVariablePicker extends VariablePicker {
         }
       }
     }
+    console.log("Picker Variable", selectedVariable);
     return selectedVariable;
   }
 };

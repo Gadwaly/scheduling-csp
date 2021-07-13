@@ -88,7 +88,7 @@ const PreferencesSelector = (props) => {
           isMulti
           closeMenuOnSelect={false}
           options={props.availableCourses}
-          getOptionLabel={(option) => `${option?.name}`}
+          getOptionLabel={(option) => `${option?.name} - ${option?.code}`}
           getOptionValue={(option) => `${option?.code}`}
           placeholder={"Select Courses"}
           classNamePrefix="courses-select"

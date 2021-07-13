@@ -49,6 +49,7 @@ export class CostCalculator {
         discardedGroups.push(courseGroup);
       }
     });
+    console.log("DISCARDED GROUPS", discardedGroups.length)
     let discardingPercent = 1;
     let averageCosts = 1;
     if(discardedGroups.length !== 0) {
@@ -59,6 +60,9 @@ export class CostCalculator {
         }, 0) / discardedGroups.length;
       }
     }
+    console.log("DISCARDING PERCENT", discardingPercent)
+    console.log("Average Costs", averageCosts)
+    console.log("Final cost", group.cost * averageCosts * discardingPercent)
     return group.cost * averageCosts * discardingPercent;
   }
 };
