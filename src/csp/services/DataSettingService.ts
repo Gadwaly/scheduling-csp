@@ -99,7 +99,7 @@ const preferencesMap = {
     'min': 'gaps',
     'max': 'gapsPlus'
   },
-  'minMaxDays': {
+  'minOrMaxDays': {
     'min': 'minDays',
     'max': 'maxDays'
   },

@@ -132,7 +132,7 @@ function App() {
         },
       }),
       ...(minMaxDays[0] && {
-        minMaxDays: {
+        minOrMaxDays: {
           value: minMaxDays[0],
           order: minMaxDays[1],
         },
