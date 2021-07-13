@@ -5,6 +5,14 @@ import { SchedulerSnapshot } from './types/SchedulerSnapshot';
 import { getVariablePicker, SchedulerContextData } from './services'
 import { ScheduleScoreCalculator } from './services/ScheduleScoreCalculator';
 
+interface CombinationsMapValue {
+    score: number;
+    schedule: {
+      variable: Variable;
+      assignedValue: CourseGroup;
+    }[];
+};
+
 export class Scheduler {
   variables: Variable[];
   currentSchedule: CurrentSchedule;
@@ -14,6 +22,7 @@ export class Scheduler {
   variablePickingMethod: string;
   groupOrderingMethods: string[];
   scheduleStateCounter: number;
+  combinationsMap: { [key: string]: CombinationsMapValue };
 
   constructor(data: SchedulerData) {
     this.variables = data?.variables;
@@ -23,6 +32,7 @@ export class Scheduler {
     this.setVariablePickingMethod(data?.variablePickingMethod);
     this.setGroupOrderingMethods(data.groupOrderingMethods);
     this.scheduleStateCounter = 0;
+    this.combinationsMap = {};
   };
 
   setVariablePickingMethod = (method = 'min-values'): void => {
@@ -102,6 +112,7 @@ export class Scheduler {
     let notChangedVariables = 0;
     while(this.variables.length !== notChangedVariables) {
       notChangedVariables = 0;
+      this.combinationsMap[this.getCurrentCombination()] = this.getCombinationMapValue();
       for (let variable of this.variables) {
         const previousAssignedValue = variable.assignedValue;
         variable.resetAssignedValue();
@@ -119,8 +130,51 @@ export class Scheduler {
           notChangedVariables++;
         }
       }
+      if(this.combinationsMap[this.getCurrentCombination()]) {
+        let max = Number.MIN_SAFE_INTEGER;
+        let selectedCombinationsMapValue: CombinationsMapValue;
+        Object.keys(this.combinationsMap).forEach((key) => {
+          const combinationsMapValue = this.combinationsMap[key];
+          if(combinationsMapValue.score > max) {
+            max = combinationsMapValue.score;
+            selectedCombinationsMapValue = combinationsMapValue;
+          }
+        });
+        this.variables.forEach((variable) => { variable.resetAssignedValue() });
+        selectedCombinationsMapValue.schedule.forEach((combinationsMapValue) => {
+          let currentVariable = combinationsMapValue.variable;
+          currentVariable.assignedValue = combinationsMapValue.assignedValue;
+          this.updateCurrentSchedule(currentVariable);
+          for(let variable of this.variables) {
+            if(variable !== currentVariable) {
+              const clashingCourseGroups = variable.getClashingCourseGroups(this.currentSchedule);
+              currentVariable.assignedValue.addToClashingCourseGroups(clashingCourseGroups);
+            }
+          }
+        });
+        break;
+      }
     }
   };
+
+  private getCombinationMapValue = (): CombinationsMapValue => {
+    let result: { variable: Variable, assignedValue: CourseGroup }[] = [];
+    this.variables.forEach((variable) => {
+      result.push({ variable, assignedValue: variable.assignedValue });
+    });
+    return {
+      schedule: result,
+      score: this.getCurrentScore()
+    };
+  };
+
+  private getCurrentCombination = (): string => {
+    let result: string = '';
+    this.currentAssignedValues().forEach((group) => {
+      result += group.uniqueID;
+    });
+    return result;
+  }
 
   private pickVariable = (): Variable => {
     return getVariablePicker(this.variablePickingMethod, this.schedulerContextData()).pick();
