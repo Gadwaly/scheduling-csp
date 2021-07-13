@@ -1,5 +1,12 @@
 import { CurrentSchedule } from "../models";
 import { SoftConstraint, dayNumber } from "../types";
+import configs from "../configs.json";
+
+const weightsMap = {
+  0: configs.weights.high,
+  1: configs.weights.medium,
+  3: configs.weights.low,
+};
 
 export class ScheduleScoreCalculator {
   private currentSchedule: CurrentSchedule;
@@ -20,13 +27,13 @@ export class ScheduleScoreCalculator {
   }
 
   calculate = (): number => {
-    console.log(this.softConstraints)
+    console.log(this.softConstraints);
     return this.softConstraints.reduce((accumalator, softConstraint) => {
       return (
         accumalator +
-        softConstraint.priority *
+        weightsMap[softConstraint.priority] *
           this[softConstraint.type](
-            softConstraint.priority,
+            weightsMap[softConstraint.priority],
             softConstraint.param
           )
       );
@@ -74,7 +81,11 @@ export class ScheduleScoreCalculator {
     return earliness;
   };
 
-  private minDays = (priority, internalWieght = 1, log = true) => {
+  private minDays = (
+    priority,
+    internalWieght = +configs.weights.minOrMaxDays,
+    log = true
+  ) => {
     let daysCount = this.getDaysCount();
     if (log)
       this.logs.push(
@@ -83,7 +94,11 @@ export class ScheduleScoreCalculator {
     return -daysCount * internalWieght;
   };
 
-  private maxDays = (priority, internalWieght = 1, log = true) => {
+  private maxDays = (
+    priority,
+    internalWieght = +configs.weights.minOrMaxDays,
+    log = true
+  ) => {
     let daysCount = this.getDaysCount();
     if (log)
       this.logs.push(
@@ -92,7 +107,11 @@ export class ScheduleScoreCalculator {
     return daysCount * internalWieght;
   };
 
-  private earlyPeriods = (priority, internalWieght = 1 / 5, log = true) => {
+  private earlyPeriods = (
+    priority,
+    internalWieght = +configs.weights.earlyOrLate,
+    log = true
+  ) => {
     const earliness = this.getEarlinessScore();
     if (log)
       this.logs.push(
@@ -101,7 +120,11 @@ export class ScheduleScoreCalculator {
     return -earliness * internalWieght;
   };
 
-  private latePeriods = (priority, internalWieght = 1 / 5, log = true) => {
+  private latePeriods = (
+    priority,
+    internalWieght = +configs.weights.earlyOrLate,
+    log = true
+  ) => {
     const earliness = this.getEarlinessScore();
     if (log)
       this.logs.push(
@@ -110,25 +133,29 @@ export class ScheduleScoreCalculator {
     return earliness * internalWieght;
   };
 
-  private gaps = (priority, internalWieght = 1 / 3, log = true) => {
+  private gaps = (
+    priority,
+    internalWieght = +configs.weights.gaps,
+    log = true
+  ) => {
     let gaps = 0;
     let busyDays: number[] = this.getBusyDays();
 
     busyDays.forEach((isBusy, day) => {
-      if(isBusy){
-      console.log(day,isBusy)
-      let firstPeriod = day * 12 + 11,
-        lastPeriod = day * 12;
+      if (isBusy) {
+        console.log(day, isBusy);
+        let firstPeriod = day * 12 + 11,
+          lastPeriod = day * 12;
 
-      for (let i = day * 12; i < day * 12 + 12; i++) {
-        if (this.currentSchedule.schedule[i]) {
-          if (firstPeriod > i) firstPeriod = i;
-          if (lastPeriod < i) lastPeriod = i;
+        for (let i = day * 12; i < day * 12 + 12; i++) {
+          if (this.currentSchedule.schedule[i]) {
+            if (firstPeriod > i) firstPeriod = i;
+            if (lastPeriod < i) lastPeriod = i;
+          }
         }
-      }
 
-      for (let i = firstPeriod; i < lastPeriod; i++)
-        if (!this.currentSchedule.schedule[i]) gaps++;
+        for (let i = firstPeriod; i < lastPeriod; i++)
+          if (!this.currentSchedule.schedule[i]) gaps++;
       }
     });
 
@@ -140,7 +167,11 @@ export class ScheduleScoreCalculator {
     return -gaps * internalWieght;
   };
 
-  private gapsPlus = (priority, internalWieght = 1 / 3, log = true) => {
+  private gapsPlus = (
+    priority,
+    internalWieght = +configs.weights.gaps,
+    log = true
+  ) => {
     const gaps = this.gaps(1, priority, false);
     if (log)
       this.logs.push(
@@ -152,14 +183,14 @@ export class ScheduleScoreCalculator {
   private daysOff = (
     priority,
     days: string[],
-    internalWieght = 3,
+    internalWieght = +configs.weights.offDays,
     log = true
   ) => {
-    console.log('days off', days)
+    console.log("days off", days);
     const busyDays = this.getBusyDays();
     let hits = 0;
     for (let i = 0; i < days.length; i++) {
-      console.log(days, busyDays)
+      console.log(days, busyDays);
       if (busyDays[dayNumber[days[i]]]) {
         hits--;
         if (log)
@@ -181,10 +212,10 @@ export class ScheduleScoreCalculator {
   private courseInstructor = (
     priority,
     instructors: any,
-    internalWieght = 2,
+    internalWieght = +configs.weights.instructor,
     log = true
   ) => {
-    console.log('courses instructor', instructors)
+    console.log("courses instructor", instructors);
     let hits = 0;
     this.currentSchedule.scheduleGroups.forEach((scheduleGroup) => {
       if (scheduleGroup.instructor && instructors[scheduleGroup.course]) {
