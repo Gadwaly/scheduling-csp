@@ -6,6 +6,7 @@ const weightsMap = {
   0: configs.weights.high,
   1: configs.weights.medium,
   3: configs.weights.low,
+  null: 1,
 };
 
 export class ScheduleScoreCalculator {
