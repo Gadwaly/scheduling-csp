@@ -110,6 +110,7 @@ export class Scheduler {
 
   protected improveAssignedValues = (iterations = 1) => {
     for(let i = 0; i < iterations; i++) {
+      let previousCombination = this.getCurrentCombination();
       for (let variable of this.variables) {
         this.combinationsMap[this.getCurrentCombination()] = this.getCombinationMapValue();
         variable.resetAssignedValue();
@@ -123,6 +124,9 @@ export class Scheduler {
           }
         });
         this.updateVisualizer(variable);
+      }
+      if(previousCombination === this.getCurrentCombination()) {
+        break;
       }
     }
     if(this.combinationsMap[this.getCurrentCombination()]) {
