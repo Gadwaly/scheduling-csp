@@ -21,7 +21,7 @@ app.post('/register', (req: Request, res: Response) => {
 });
 
 app.post('/reset', async (req: Request, res: Response) => {
-  const data = JSON.stringify(req.body, null, 4);
+  const data = JSON.stringify(req.body, null, 2);
   try {
     await fs.writeFile(`${__dirname}/csp/configs.json`, data, 'utf8');
     res.status(200).send('Configs file is written successfully');
