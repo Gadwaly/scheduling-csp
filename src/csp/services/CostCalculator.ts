@@ -49,12 +49,15 @@ export class CostCalculator {
         discardedGroups.push(courseGroup);
       }
     });
-    const discardingPercent = discardedGroups.length / availableGroups.length;
+    let discardingPercent = 1;
     let averageCosts = 1;
-    if(discardingPercent >= DISCARDING_GROUPS_AVERAGE_COSTS_THRESHOLD) {
-      averageCosts = discardedGroups.reduce((accumalator, courseGroup) => {
-        return accumalator + courseGroup.cost
-      }, 0) / discardedGroups.length;
+    if(discardedGroups.length !== 0) {
+      discardingPercent = discardedGroups.length / availableGroups.length;
+      if(discardingPercent >= DISCARDING_GROUPS_AVERAGE_COSTS_THRESHOLD) {
+        averageCosts = discardedGroups.reduce((accumalator, courseGroup) => {
+          return accumalator + courseGroup.cost
+        }, 0) / discardedGroups.length;
+      }
     }
     return group.cost * averageCosts * discardingPercent;
   }
