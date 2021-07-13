@@ -110,8 +110,8 @@ export class Scheduler {
 
   protected improveAssignedValues = (iterations = 1) => {
     for(let i = 0; i < iterations; i++) {
-      this.combinationsMap[this.getCurrentCombination()] = this.getCombinationMapValue();
       for (let variable of this.variables) {
+        this.combinationsMap[this.getCurrentCombination()] = this.getCombinationMapValue();
         variable.resetAssignedValue();
         variable.updateDomainCosts(this.schedulerContextData());
         variable.assignedValue = variable.availableDomainGroups()[0];
