@@ -108,13 +108,10 @@ export class Scheduler {
     return true;
   };
 
-  protected improveAssignedValues = () => {
-    let notChangedVariables = 0;
-    while(this.variables.length !== notChangedVariables) {
-      notChangedVariables = 0;
+  protected improveAssignedValues = (iterations = 1) => {
+    for(let i = 0; i < iterations; i++) {
       this.combinationsMap[this.getCurrentCombination()] = this.getCombinationMapValue();
       for (let variable of this.variables) {
-        const previousAssignedValue = variable.assignedValue;
         variable.resetAssignedValue();
         variable.updateDomainCosts(this.schedulerContextData());
         variable.assignedValue = variable.availableDomainGroups()[0];
@@ -126,20 +123,19 @@ export class Scheduler {
           }
         });
         this.updateVisualizer(variable);
-        if(variable.assignedValue === previousAssignedValue) {
-          notChangedVariables++;
-        }
       }
-      if(this.combinationsMap[this.getCurrentCombination()]) {
-        let max = Number.MIN_SAFE_INTEGER;
-        let selectedCombinationsMapValue: CombinationsMapValue;
-        Object.keys(this.combinationsMap).forEach((key) => {
-          const combinationsMapValue = this.combinationsMap[key];
-          if(combinationsMapValue.score > max) {
-            max = combinationsMapValue.score;
-            selectedCombinationsMapValue = combinationsMapValue;
-          }
-        });
+    }
+    if(this.combinationsMap[this.getCurrentCombination()]) {
+      let max = Number.MIN_SAFE_INTEGER;
+      let selectedCombinationsMapValue: CombinationsMapValue;
+      Object.keys(this.combinationsMap).forEach((key) => {
+        const combinationsMapValue = this.combinationsMap[key];
+        if(combinationsMapValue.score > max) {
+          max = combinationsMapValue.score;
+          selectedCombinationsMapValue = combinationsMapValue;
+        }
+      });
+      if(!this.isCurrentCombination(selectedCombinationsMapValue)) {
         this.variables.forEach((variable) => { variable.resetAssignedValue() });
         selectedCombinationsMapValue.schedule.forEach((combinationsMapValue) => {
           let currentVariable = combinationsMapValue.variable;
@@ -152,9 +148,15 @@ export class Scheduler {
             }
           }
         });
-        break;
       }
     }
+  };
+
+  private isCurrentCombination = (combination: CombinationsMapValue): boolean => {
+    const currentGroups = this.currentAssignedValues();
+    return combination.schedule.every((data) => {
+      return currentGroups.includes(data.assignedValue);
+    });
   };
 
   private getCombinationMapValue = (): CombinationsMapValue => {
