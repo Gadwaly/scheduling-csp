@@ -3,11 +3,10 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import { register } from "./controllers/registrationController";
 import { benchmark } from './controllers/benchmarkController';
-import { promises } from 'fs';
+import { promises as fs } from 'fs';
 
 dotenv.config();
 
-const fs = promises;
 const app: Application = express();
 
 app.use(morgan('dev', { immediate: true }));
@@ -22,9 +21,9 @@ app.post('/register', (req: Request, res: Response) => {
 });
 
 app.post('/reset', async (req: Request, res: Response) => {
-  const body = req.body;
+  const data = JSON.stringify(req.body, null, 4);
   try {
-    await fs.writeFile('./csp/configs.json', body, 'utf8');
+    await fs.writeFile(`${__dirname}/csp/configs.json`, data, 'utf8');
     res.status(200).send('Configs file is written successfully');
   } catch(error) {
     console.error(error);
