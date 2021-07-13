@@ -1,11 +1,18 @@
-import { CurrentSchedule } from '../models';
-import { SoftConstraint, dayNumber } from '../types';
-import configs from '../configs.json';
+import { CurrentSchedule } from "../models";
+import { SoftConstraint, dayNumber } from "../types";
+import configs from "../configs.json";
 
 export interface SoftConstraintsCostCalculatorData {
   periods: number[][];
   course: string;
   instructor: string;
+}
+
+const weightsMap = {
+  0: configs.weights.high,
+  1: configs.weights.medium,
+  2: configs.weights.low,
+  null: 1,
 };
 
 export class SoftConstraintsBasedCostCalculator {
@@ -17,22 +24,25 @@ export class SoftConstraintsBasedCostCalculator {
     this.periods = data.periods;
     this.course = data.course;
     this.instructor = data.instructor;
+  }
+
+  calculate = (
+    currentSchedule: CurrentSchedule,
+    softConstraints: SoftConstraint[]
+  ): number => {
+    return softConstraints.reduce((accumalator, softConstraint) => {
+      return (
+        accumalator +
+        weightsMap[softConstraint.priority] *
+          this[softConstraint.type](currentSchedule, softConstraint.param)
+      );
+    }, 0);
   };
 
-  calculate = (currentSchedule: CurrentSchedule, softConstraints: SoftConstraint[]): number => {
-    return softConstraints.reduce(
-      (accumalator, softConstraint) => {
-        return (
-          accumalator +
-          softConstraint.priority *
-            this[softConstraint.type](currentSchedule, softConstraint.param)
-        );
-      },
-      0
-    );
-  };
-
-  private minDays = (currentSchedule: CurrentSchedule, internalWieght = +configs.weights.minOrMaxDays) => {
+  private minDays = (
+    currentSchedule: CurrentSchedule,
+    internalWieght = +configs.weights.minOrMaxDays
+  ) => {
     let addedDaysCount = 0;
     const busyDays = new Array(6).fill(false);
     for (let i = 0; i < 6; i++) {
@@ -54,11 +64,17 @@ export class SoftConstraintsBasedCostCalculator {
     return addedDaysCount * internalWieght;
   };
 
-  private maxDays = (currentSchedule: CurrentSchedule, internalWieght = +configs.weights.minOrMaxDays) => {
+  private maxDays = (
+    currentSchedule: CurrentSchedule,
+    internalWieght = +configs.weights.minOrMaxDays
+  ) => {
     return -this.minDays(currentSchedule, 1) * internalWieght;
   };
 
-  private earlyPeriods = (_currentSchedule: CurrentSchedule, internalWieght = +configs.weights.earlyOrLate) => {
+  private earlyPeriods = (
+    _currentSchedule: CurrentSchedule,
+    internalWieght = +configs.weights.earlyOrLate
+  ) => {
     let earliness = 0;
     this.periods.forEach((period) => {
       const day = Math.floor(period[0] / 12),
@@ -70,11 +86,17 @@ export class SoftConstraintsBasedCostCalculator {
     return earliness * internalWieght;
   };
 
-  private latePeriods = (currentSchedule: CurrentSchedule, internalWieght = +configs.weights.earlyOrLate) => {
+  private latePeriods = (
+    currentSchedule: CurrentSchedule,
+    internalWieght = +configs.weights.earlyOrLate
+  ) => {
     return -this.earlyPeriods(currentSchedule, 1) * internalWieght;
   };
 
-  private gaps = (currentSchedule: CurrentSchedule, internalWieght = +configs.weights.gaps) => {
+  private gaps = (
+    currentSchedule: CurrentSchedule,
+    internalWieght = +configs.weights.gaps
+  ) => {
     let gaps = 0;
     let schedule = [...currentSchedule.schedule];
     let periodDays: number[] = [];
@@ -105,7 +127,10 @@ export class SoftConstraintsBasedCostCalculator {
     return gaps * internalWieght;
   };
 
-  private gapsPlus = (currentSchedule: CurrentSchedule, internalWieght = +configs.weights.gaps) => {
+  private gapsPlus = (
+    currentSchedule: CurrentSchedule,
+    internalWieght = +configs.weights.gaps
+  ) => {
     return -this.gaps(currentSchedule, 1) * internalWieght;
   };
 
@@ -153,6 +178,6 @@ export class SoftConstraintsBasedCostCalculator {
         return -1 * internalWieght;
       return 1 * internalWieght;
     }
-    return 0; 
+    return 0;
   };
-};
+}
