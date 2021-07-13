@@ -3,6 +3,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import { register } from "./controllers/registrationController";
 import { benchmark } from './controllers/benchmarkController';
+import { promises as fs } from 'fs';
 
 dotenv.config();
 
@@ -19,8 +20,15 @@ app.post('/register', (req: Request, res: Response) => {
   res.send(response);
 });
 
-app.post('/reset', (_req: Request, res: Response) => {
-  res.status(200).send('Scheduler has been reset');
+app.post('/reset', async (req: Request, res: Response) => {
+  const data = JSON.stringify(req.body, null, 2);
+  try {
+    await fs.writeFile(`${__dirname}/csp/configs.json`, data, 'utf8');
+    res.status(200).send('Configs file is written successfully');
+  } catch(error) {
+    console.error(error);
+    res.status(400).send('Error in updating the Configs file');
+  }
 });
 
 app.post('/score', (req: Request, res: Response) => {
