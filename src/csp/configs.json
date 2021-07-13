@@ -1,0 +1,12 @@
+{
+	"weights": {
+		"instructor": 2,
+		"offDays": 3,
+		"minOrMaxDays": 1,
+		"gaps": 0.3,
+		"earlyOrLate": 0.2,
+		"high": 3,
+		"medium": 2,
+		"low": 0.5
+	}
+}
