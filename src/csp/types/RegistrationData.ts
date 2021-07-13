@@ -45,7 +45,7 @@ export interface PreferencesData {
     value: GapsValues;
     order: number | string;
   };
-  minMaxDays?: {
+  minOrMaxDays?: {
     value: MinMaxDayesValues;
     order: number | string;
   };
