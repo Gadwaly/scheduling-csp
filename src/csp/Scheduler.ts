@@ -39,7 +39,7 @@ export class Scheduler {
     this.variablePickingMethod = method;
   };
 
-  setGroupOrderingMethods = (methods = ['considerDiscardedAverageCostsWithTheirPercentage']): void => {
+  setGroupOrderingMethods = (methods = []): void => {
     this.groupOrderingMethods = methods;
   };
 

@@ -4,7 +4,7 @@ import configs from "../configs.json";
 
 const weightsMap = {
   0: configs.weights.high,
-  1: configs.weights.medium,
+  1: configs.weights.mid,
   2: configs.weights.low,
   null: 1,
 };
