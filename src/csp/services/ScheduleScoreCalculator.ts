@@ -28,7 +28,6 @@ export class ScheduleScoreCalculator {
   }
 
   calculate = (): number => {
-    console.log(this.softConstraints);
     return this.softConstraints.reduce((accumalator, softConstraint) => {
       return (
         accumalator +
@@ -144,7 +143,6 @@ export class ScheduleScoreCalculator {
 
     busyDays.forEach((isBusy, day) => {
       if (isBusy) {
-        console.log(day, isBusy);
         let firstPeriod = day * 12 + 11,
           lastPeriod = day * 12;
 

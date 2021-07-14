@@ -71,18 +71,18 @@ export const setSoftConstraints = (preferencesData: PreferencesData): SoftConstr
     if (typeof(preference.value) === 'string') {
       softConstraints.push({
         type: preferencesMap[preferenceName][preference.value],
-        priority: +preference.order,
+        priority: preference.order !== null ? +preference.order : null,
       });
     } else if(preference.value) {
       softConstraints.push({
         type: preferencesMap[preferenceName],
-        priority: +preference.order,
+        priority: preference.order !== null ? +preference.order : null,
         param: preference.value
       });
     } else { // courses instructor
       softConstraints.push({
         type: preferencesMap[preferenceName],
-        priority: +1,
+        priority: null,
         param: preference
       });
     }
