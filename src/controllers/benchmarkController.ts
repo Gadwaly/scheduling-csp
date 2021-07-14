@@ -2,7 +2,6 @@ import { PreferencesData, RegistrationData } from '../csp/types';
 import { Scheduler } from '../csp/Scheduler';
 import allCourses from '../csp/allCourses.json';
 import { setData } from '../csp/services';
-import { ScheduleScoreCalculator } from '../csp/services/ScheduleScoreCalculator';
 import { performance } from 'perf_hooks'
 
 export const benchmark = (data: { preferences: PreferencesData, variablePickingMethod: string }) => {
@@ -17,11 +16,13 @@ export const benchmark = (data: { preferences: PreferencesData, variablePickingM
   t2 = performance.now();
   const processingTime = t2 - t1;
   const score = scheduler.getCurrentScore();
+  const periods = getPeriods(scheduler);
   return {
     score,
     dataSettingTime,
     processingTime,
-    visits: scheduler.getScheduleStates()
+    visits: scheduler.getScheduleStates(),
+    periods
   };
 };
 
@@ -33,4 +34,14 @@ const createRegistrationData = (preferences: PreferencesData): RegistrationData 
   });
   const table = Object.assign({}, ...courses);
   return { table, preferences };
+};
+
+const getPeriods = (scheduler: Scheduler) => {
+  return scheduler.currentAssignedValues().map((group) => {
+    return {
+      periods: group.getConvertedPeriods(),
+      courseCode: group.course,
+      instructor: group.instructor
+    };
+  });
 };
