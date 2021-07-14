@@ -116,4 +116,14 @@ export class CourseGroup {
       }
     }
   };
+
+  getConvertedPeriods = () => {
+    return this.periods.map((period) => {
+      return {
+        day: Math.floor(period[0] / 12),
+        from: period[0],
+        to: period[1]
+      };
+    });
+  }
 };

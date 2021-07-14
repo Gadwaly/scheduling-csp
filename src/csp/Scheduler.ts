@@ -6,11 +6,11 @@ import { getVariablePicker, SchedulerContextData } from './services'
 import { ScheduleScoreCalculator } from './services/ScheduleScoreCalculator';
 
 interface CombinationsMapValue {
-    score: number;
-    schedule: {
-      variable: Variable;
-      assignedValue: CourseGroup;
-    }[];
+  score: number;
+  schedule: {
+    variable: Variable;
+    assignedValue: CourseGroup;
+  }[];
 };
 
 export class Scheduler {
@@ -198,7 +198,7 @@ export class Scheduler {
     }
   };
 
-  private currentAssignedValues = () => {
+  currentAssignedValues = () => {
     return this.variables.filter((variable) => variable.hasAssignedValue())
     .map((variable) => variable.assignedValue);
   };
