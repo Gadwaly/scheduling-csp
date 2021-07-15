@@ -22,7 +22,8 @@ export const benchmark = (data: { preferences: PreferencesData, variablePickingM
     dataSettingTime,
     processingTime,
     visits: scheduler.getScheduleStates(),
-    periods
+    periods,
+    creditHours: scheduler.getCreditHours()
   };
 };
 
@@ -40,7 +41,7 @@ const getPeriods = (scheduler: Scheduler) => {
   return scheduler.currentAssignedValues().map((group) => {
     return {
       periods: group.getConvertedPeriods(),
-      courseCode: group.course,
+      course: group.course,
       instructor: group.instructor
     };
   });

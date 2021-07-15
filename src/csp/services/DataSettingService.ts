@@ -57,7 +57,7 @@ const setVariables = (courses: CoursesData): Variable[] => {
         }
       }
     });
-    variables.push(new Variable(course.name, courseCode, groups));
+    variables.push(new Variable(course.name, courseCode, groups, +course.creditHours));
   });
   return variables;
 };

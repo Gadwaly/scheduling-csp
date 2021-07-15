@@ -119,10 +119,14 @@ export class CourseGroup {
 
   getConvertedPeriods = () => {
     return this.periods.map((period) => {
+      let day = Math.floor(period[0] / 12);
+      const dayString = Object.keys(dayNumber)[day];
+      const from = period[0] - 12 * day + 1;
+      const to = period[1] - 12 * day + 1;
       return {
-        day: Math.floor(period[0] / 12),
-        from: period[0],
-        to: period[1]
+        day: dayString,
+        from,
+        to
       };
     });
   }

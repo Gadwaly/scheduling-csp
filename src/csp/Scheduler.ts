@@ -237,6 +237,12 @@ export class Scheduler {
     });
     return result;
   };
+
+  getCreditHours = (): number => {
+    return this.variables.reduce((accumalator, variable) => {
+      return accumalator + variable.creditHours;
+    }, 0);
+  }
 };
 
 
