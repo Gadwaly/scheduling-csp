@@ -1,8 +1,8 @@
-import { PreferencesData, RegistrationData } from '../csp/types';
+import { PreferencesData } from '../csp/types';
 import { Scheduler } from '../csp/Scheduler';
-import allCourses from '../csp/allCourses.json';
 import { setData } from '../csp/services';
 import { performance } from 'perf_hooks'
+import { createRegistrationData } from './utils';
 
 export const benchmark = (data: { preferences: PreferencesData, variablePickingMethod: string }) => {
   const registrationData = createRegistrationData(data.preferences);
@@ -25,16 +25,6 @@ export const benchmark = (data: { preferences: PreferencesData, variablePickingM
     periods,
     creditHours: scheduler.getCreditHours()
   };
-};
-
-const createRegistrationData = (preferences: PreferencesData): RegistrationData => {
-  const coursesArray = preferences.courses;
-  const courses = [];
-  coursesArray.forEach((course) => {
-    courses.push({ [course.code]: allCourses[course.code] });
-  });
-  const table = Object.assign({}, ...courses);
-  return { table, preferences };
 };
 
 const getPeriods = (scheduler: Scheduler) => {
