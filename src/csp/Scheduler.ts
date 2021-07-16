@@ -186,7 +186,7 @@ export class Scheduler {
     return getVariablePicker(this.variablePickingMethod, this.schedulerContextData()).pick();
   };
 
-  private allVariablesHasAssignedValue = (): boolean => {
+  allVariablesHasAssignedValue = (): boolean => {
     return this.variables.every((variable) => variable.hasAssignedValue());
   };
 
@@ -280,37 +280,51 @@ class TempScheduler extends Scheduler{
   }
 
   tryBestDiscarded(){
+    //// Broken
     // Assigns the discarded course group with the lowest 
     // then tries to registers the remaining variables
-    let minCost = Number.MAX_SAFE_INTEGER;
-    let minCostCourseGroup = null
-    let minCostVariable: Variable = null
+    let maxCost = Number.MAX_SAFE_INTEGER;
+    let maxCostCourseGroup = null
+    let maxCostVariable: Variable = null
     this.variables.forEach(variable => {
       variable.domain.forEach(courseGroup => {
+        let removedDiscardingAssignments = []
         if(courseGroup.discarded()){
-          courseGroup.updateCost(this.schedulerContextData())
-          const totalGroupCost = courseGroup.cost * courseGroup.discardingCounter
-          if(totalGroupCost < minCost){
-            minCost = totalGroupCost
-            minCostCourseGroup = courseGroup
-            minCostVariable = variable
-          }
+          // 1- remove groups which are discarding it
+          // 2- Find the assigned value's cost
+          // 3- remove its currently assigned value
+          // 4- calculate its cost
+          // 5- If it's better than the previously assigned value and 
+          // it's better than the current best replace the current best. 
+          // 
+          // courseGroup.updateCost(this.schedulerContextData())
+          // variable.assignedValue.updateCost(this.schedulerContextData())
+          // const totalGroupCost = courseGroup.cost * courseGroup.discardingCounter
+          // if(totalGroupCost < maxCost && (courseGroup.cost > variable.assignedValue.cost)){
+          //   maxCost = totalGroupCost
+          //   maxCostCourseGroup = courseGroup
+          //   maxCostVariable = variable
+          // }
         }
       })
     })
+    // If didn't find any discarded group that is better than the assigned group
+    if(!maxCostVariable){
+      return false
+    }
     // Resets every variable whose assigned value clashes with the best discarded group
     this.variables.forEach(variable => {
-      if(variable.assignedValue.clashingCourseGroups.indexOf(minCostCourseGroup)){
+      if(variable.assignedValue.clashingCourseGroups.indexOf(maxCostCourseGroup)){
         variable.resetAssignedValue()
       }
     })
     // Assigning the best discarded group
-    minCostVariable.assignedValue = minCostCourseGroup
+    maxCostVariable.assignedValue = maxCostCourseGroup
     this.updateCurrentSchedule()
     for (let variable of this.variables) {
-      if (variable !== minCostVariable) {
+      if (variable !== maxCostVariable) {
         const clashingCourseGroups = variable.getClashingCourseGroups(this.currentSchedule);
-        minCostVariable.assignedValue.addToClashingCourseGroups(clashingCourseGroups);
+        maxCostVariable.assignedValue.addToClashingCourseGroups(clashingCourseGroups);
         // if assigning the best discarded group prevented the registartion of another 
         // course, terminate and return false
         if (!variable.hasAssignedValue() && variable.hasEmptyDomain()) {
@@ -321,15 +335,15 @@ class TempScheduler extends Scheduler{
     this.csp();
     this.improveAssignedValues();
     this.updateCurrentSchedule();    
-    if (this.getCurrentScore() > this.scheduleScoreBefore){
-      return {variables: this.variables, currentSchedule: this.variables}
+    if (this.getCurrentScore() > this.scheduleScoreBefore && (this.allVariablesHasAssignedValue())){
+      return {variables: this.variables, currentSchedule: this.currentSchedule}
     }else{
       return false
     }
   }
 
   tryWorstAssigned(){
-    let maxCost = 0;
+    let maxCost = -10000000;
     let maxCostVariable: Variable = null
     this.variables.forEach(variable => {
       variable.assignedValue.updateCost(this.schedulerContextData())
@@ -344,7 +358,7 @@ class TempScheduler extends Scheduler{
     this.csp();
     this.updateCurrentSchedule()
     if (this.getCurrentScore() > this.scheduleScoreBefore){
-      return {variables: this.variables, currentSchedule: this.variables}
+      return {variables: this.variables, currentSchedule: this.currentSchedule}
     }else{
       return false
     }
