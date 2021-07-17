@@ -56,7 +56,7 @@ class MinValuesBasedVariablePicker extends VariablePicker {
     let min = Number.MAX_SAFE_INTEGER;
     let selectedVariable: Variable;
     this.variables.forEach((variable) => {
-      if (!variable.hasAssignedValue() && variable.domain.length < min) {
+      if (!variable.hasAssignedValue() && variable.availableDomainGroups().length < min) {
         selectedVariable = variable;
         min = variable.domain.length;
       }
@@ -72,9 +72,12 @@ class AverageDomainCostsVariablePicker extends VariablePicker {
     let selectedVariable: Variable;
     for (let variable of this.variables) {
       if (!variable.hasAssignedValue()) {
-        console.log("IM IN")
+        let availableGroupsCount = variable.availableDomainGroups().length;
+        if (availableGroupsCount === 1) {
+          selectedVariable = variable;
+          break;
+        }
         variable.updateDomainCosts(this.data);
-        console.log("DATA VARIABLES", this.data.schedulerContextData.variables)
         let averageDomainCosts = variable.domain.reduce(
           (accumalator, courseGroup) => {
             return accumalator + courseGroup.cost
@@ -86,7 +89,6 @@ class AverageDomainCostsVariablePicker extends VariablePicker {
         }
       }
     }
-    console.log("Picker Variable", selectedVariable);
     return selectedVariable;
   }
 };

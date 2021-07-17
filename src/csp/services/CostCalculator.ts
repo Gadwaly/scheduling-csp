@@ -1,6 +1,6 @@
 import { CurrentSchedule, Variable, CourseGroup } from "../models";
 import { SoftConstraint } from "../types";
-import { SoftConstraintsCostCalculatorData, SoftConstraintsBasedCostCalculator } from '.';
+import { SoftConstraintsCostCalculatorData, SoftConstraintsBasedCostCalculator, CostLimitCalculator } from '.';
 
 export interface SchedulerContextData {
   variables: Variable[];
@@ -17,6 +17,7 @@ export interface CostCalculatorData {
 export class CostCalculator {
   private schedulerContextData: SchedulerContextData;
   private softConstraintsCostCalculatorData: SoftConstraintsCostCalculatorData;
+
   constructor(data: CostCalculatorData) {
     this.softConstraintsCostCalculatorData = data.softConstraintsCostCalculatorData;
     this.schedulerContextData = data.schedulerContextData;
@@ -49,20 +50,27 @@ export class CostCalculator {
         discardedGroups.push(courseGroup);
       }
     });
-    console.log("DISCARDED GROUPS", discardedGroups.length)
     let discardingPercent = 1;
     let averageCosts = 1;
     if(discardedGroups.length !== 0) {
       discardingPercent = discardedGroups.length / availableGroups.length;
-      if(discardingPercent >= DISCARDING_GROUPS_AVERAGE_COSTS_THRESHOLD) {
+      if(discardingPercent > DISCARDING_GROUPS_AVERAGE_COSTS_THRESHOLD) {
         averageCosts = discardedGroups.reduce((accumalator, courseGroup) => {
           return accumalator + courseGroup.cost
         }, 0) / discardedGroups.length;
       }
     }
-    console.log("DISCARDING PERCENT", discardingPercent)
-    console.log("Average Costs", averageCosts)
-    console.log("Final cost", group.cost * averageCosts * discardingPercent)
-    return group.cost * averageCosts * discardingPercent;
+    console.log('Previous Average = ', averageCosts);
+    const newAverageCosts = this.getProjectedValue(averageCosts);
+    console.log('New Average = ', newAverageCosts);
+    const cost = group.cost + (newAverageCosts * discardingPercent);
+    console.log('Previous Cost = ', group.cost);
+    console.log('Final cost = ', cost);
+    return cost;
   }
+
+  private getProjectedValue = (oldAverageCosts: number, slope = 1): number => {
+    const LIMIT = new CostLimitCalculator(this.schedulerContextData.softConstraints).calculate();
+    return slope * ( LIMIT - oldAverageCosts );
+  };
 };

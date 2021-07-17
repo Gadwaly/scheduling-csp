@@ -243,6 +243,11 @@ export class Scheduler {
       return accumalator + variable.creditHours;
     }, 0);
   }
+
+  isValidCombination = (): boolean => {
+    this.csp();
+    return this.allVariablesHasAssignedValue();
+  }
 };
 
 

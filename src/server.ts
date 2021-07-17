@@ -3,6 +3,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import { register } from "./controllers/registrationController";
 import { benchmark } from './controllers/benchmarkController';
+import { validate } from './controllers/validationController';
 import { promises as fs } from 'fs';
 
 dotenv.config();
@@ -35,6 +36,16 @@ app.post('/score', (req: Request, res: Response) => {
   const body = req.body;
   const response = benchmark(body);
   res.send(response);
+});
+
+app.post('/validate', (req: Request, res: Response) => {
+  const body = req.body;
+  const valid = validate(body);
+  if (valid) {
+    res.status(200).send('This is a valid combination');
+  } else {
+    res.status(422).send('This is an invalid combination');
+  }
 });
 
 app.post('/*', (_req: Request, res: Response) => {
