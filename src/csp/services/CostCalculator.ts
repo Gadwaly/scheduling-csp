@@ -73,7 +73,7 @@ export class CostCalculator {
     console.log('Previous Average = ', averageCosts);
     const newAverageCosts = this.getProjectedValue(averageCosts);
     console.log('New Average = ', newAverageCosts);
-    const cost = group.cost + (1 * discardingPercent) + (newAverageCosts * 0.5);
+    const cost = group.cost + (newAverageCosts * discardingPercent);
     console.log('Previous Cost = ', group.cost);
     console.log('Final cost = ', cost);
     console.log(`Equation = group.cost (${group.cost}) + (newAverage (${newAverageCosts}) * [ DiscardedGroupsLength (${discardedGroups.length}) / AvailableGroupsLength (${availableGroups.length}) ])`);
