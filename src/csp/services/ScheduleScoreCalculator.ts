@@ -41,7 +41,6 @@ export class ScheduleScoreCalculator {
   };
 
   printLogs = (): void => {
-    console.log(this.logs);
     this.logs.forEach((log) => console.log(log));
   };
 
@@ -185,11 +184,9 @@ export class ScheduleScoreCalculator {
     internalWieght = +configs.weights.offDays,
     log = true
   ) => {
-    console.log("days off", days);
     const busyDays = this.getBusyDays();
     let hits = 0;
     for (let i = 0; i < days.length; i++) {
-      console.log(days, busyDays);
       if (busyDays[dayNumber[days[i]]]) {
         hits--;
         if (log)
@@ -214,7 +211,6 @@ export class ScheduleScoreCalculator {
     internalWieght = +configs.weights.instructor,
     log = true
   ) => {
-    console.log("courses instructor", instructors);
     let hits = 0;
     this.currentSchedule.scheduleGroups.forEach((scheduleGroup) => {
       if (scheduleGroup.instructor && instructors[scheduleGroup.course]) {
