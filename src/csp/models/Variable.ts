@@ -37,6 +37,7 @@ export class Variable {
   };
 
   updateDomainCosts = (data: { schedulerContextData: SchedulerContextData }): void => {
+    data.schedulerContextData.currentVariable = this;
     this.domain.forEach((courseGroup) => courseGroup.updateCost(data));
 
     this.domain.sort((group1: CourseGroup, group2: CourseGroup) => {

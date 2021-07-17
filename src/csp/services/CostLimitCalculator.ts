@@ -11,25 +11,11 @@ export class CostLimitCalculator {
 
   calculate = (numberOfPeriods = 4): number => {
     let LIMIT = 0;
-    this.softConstraints.forEach((softConstraint) => {
-      switch (softConstraint.type) {
-        case 'courseInstructor':
-          LIMIT += 1 * configs.weights.instructor * weightsMap[softConstraint.priority];
-          break;
-        case 'minDays' || 'maxDays':
-          LIMIT += 1 * numberOfPeriods * configs.weights.minOrMaxDays * weightsMap[softConstraint.priority];
-          break;
-        case 'earlyPeriods' || 'latePeriods':
-          LIMIT += 12 * numberOfPeriods * configs.weights.earlyOrLate * weightsMap[softConstraint.priority];
-          break;
-        case 'gaps' || 'gapsPlus':
-          LIMIT += 10 * numberOfPeriods * configs.weights.gaps * weightsMap[softConstraint.priority];
-          break;
-        case 'daysOff':
-          LIMIT += 1 * numberOfPeriods * configs.weights.offDays * weightsMap[softConstraint.priority];
-          break;
-      }
-    });
+    LIMIT += 1 * configs.weights.instructor;
+    LIMIT += 1 * numberOfPeriods * configs.weights.minOrMaxDays;
+    LIMIT += 12 * numberOfPeriods * configs.weights.earlyOrLate;
+    LIMIT += 10 * numberOfPeriods * configs.weights.gaps;
+    LIMIT += 1 * numberOfPeriods * configs.weights.offDays;
     return LIMIT;
   };
 };

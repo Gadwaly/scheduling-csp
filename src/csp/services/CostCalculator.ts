@@ -7,6 +7,7 @@ export interface SchedulerContextData {
   currentSchedule: CurrentSchedule;
   softConstraints: SoftConstraint[];
   groupOrderingMethods: string[];
+  currentVariable?: Variable;
 };
 
 export interface CostCalculatorData {
@@ -43,7 +44,9 @@ export class CostCalculator {
     let availableGroups: CourseGroup[] = [];
     let discardedGroups: CourseGroup[] = [];
     variables.forEach((variable) => {
-      availableGroups.push(...variable.availableDomainGroups())
+      if (variable !== this.schedulerContextData.currentVariable) {
+        availableGroups.push(...variable.availableDomainGroups())
+      }
     });
     availableGroups.forEach((courseGroup) => {
       if(group.clashesWithSpecificGroup(courseGroup)) {
@@ -56,16 +59,24 @@ export class CostCalculator {
       discardingPercent = discardedGroups.length / availableGroups.length;
       if(discardingPercent > DISCARDING_GROUPS_AVERAGE_COSTS_THRESHOLD) {
         averageCosts = discardedGroups.reduce((accumalator, courseGroup) => {
-          return accumalator + courseGroup.cost
+          const softConstraintsCostCalculatorData = {
+            periods: courseGroup.periods,
+            course: courseGroup.course,
+            instructor: courseGroup.instructor
+          };
+          const cost = new SoftConstraintsBasedCostCalculator(softConstraintsCostCalculatorData)
+          .calculate(this.schedulerContextData.currentSchedule, this.schedulerContextData.softConstraints);
+          return accumalator + cost;
         }, 0) / discardedGroups.length;
       }
     }
     console.log('Previous Average = ', averageCosts);
     const newAverageCosts = this.getProjectedValue(averageCosts);
     console.log('New Average = ', newAverageCosts);
-    const cost = group.cost + (newAverageCosts * discardingPercent);
+    const cost = group.cost + (1 * discardingPercent) + (newAverageCosts * 0.5);
     console.log('Previous Cost = ', group.cost);
     console.log('Final cost = ', cost);
+    console.log(`Equation = group.cost (${group.cost}) + (newAverage (${newAverageCosts}) * [ DiscardedGroupsLength (${discardedGroups.length}) / AvailableGroupsLength (${availableGroups.length}) ])`);
     return cost;
   }
 
