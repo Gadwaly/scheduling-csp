@@ -3,7 +3,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import { register } from "./controllers/registrationController";
 import { benchmark } from './controllers/benchmarkController';
-import { validate } from './controllers/validateController';
+import { validate } from './controllers/validationController';
 import { promises as fs } from 'fs';
 
 dotenv.config();
