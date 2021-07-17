@@ -8,7 +8,7 @@ export interface SoftConstraintsCostCalculatorData {
   instructor: string;
 }
 
-const weightsMap = {
+export const weightsMap = {
   0: configs.weights.high,
   1: configs.weights.mid,
   2: configs.weights.low,

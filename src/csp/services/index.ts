@@ -3,3 +3,4 @@ export * from './DataSettingService';
 export * from './VariablePickerService';
 export * from './CostCalculator';
 export * from './SoftConstraintsBasedCostCalculator';
+export * from './CostLimitCalculator';
