@@ -309,6 +309,7 @@ class TempScheduler extends Scheduler{
       variable.domain.forEach(courseGroup => {
         let removedDiscardingAssignments = []
         if(courseGroup.discarded()){
+          // --Check if the discarding groups have been assigned after me.
           // 1- remove groups which are discarding it
           // 2- Find the assigned value's cost
           // 3- remove its currently assigned value
