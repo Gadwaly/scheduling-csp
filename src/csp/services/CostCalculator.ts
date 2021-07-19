@@ -44,7 +44,7 @@ export class CostCalculator {
     let availableGroups: CourseGroup[] = [];
     let discardedGroups: CourseGroup[] = [];
     variables.forEach((variable) => {
-      if (variable !== this.schedulerContextData.currentVariable) {
+      if (variable !== this.schedulerContextData.currentVariable && !variable.hasAssignedValue()) {
         availableGroups.push(...variable.availableDomainGroups())
       }
     });
@@ -53,11 +53,11 @@ export class CostCalculator {
         discardedGroups.push(courseGroup);
       }
     });
-    let discardingPercent = 1;
+    let discardingPercent = 0;
     let averageCosts = 1;
     if(discardedGroups.length !== 0) {
       discardingPercent = discardedGroups.length / availableGroups.length;
-      if(discardingPercent > DISCARDING_GROUPS_AVERAGE_COSTS_THRESHOLD) {
+      if(discardingPercent >= DISCARDING_GROUPS_AVERAGE_COSTS_THRESHOLD) {
         averageCosts = discardedGroups.reduce((accumalator, courseGroup) => {
           const softConstraintsCostCalculatorData = {
             periods: courseGroup.periods,
@@ -70,13 +70,13 @@ export class CostCalculator {
         }, 0) / discardedGroups.length;
       }
     }
-    console.log('Previous Average = ', averageCosts);
+    // console.log('Previous Average = ', averageCosts);
     const newAverageCosts = this.getProjectedValue(averageCosts);
-    console.log('New Average = ', newAverageCosts);
+    // console.log('New Average = ', newAverageCosts);
     const cost = group.cost + (newAverageCosts * discardingPercent);
-    console.log('Previous Cost = ', group.cost);
-    console.log('Final cost = ', cost);
-    console.log(`Equation = group.cost (${group.cost}) + (newAverage (${newAverageCosts}) * [ DiscardedGroupsLength (${discardedGroups.length}) / AvailableGroupsLength (${availableGroups.length}) ])`);
+    // console.log('Previous Cost = ', group.cost);
+    // console.log('Final cost = ', cost);
+    // console.log(`Equation = group.cost (${group.cost}) + (newAverage (${newAverageCosts}) * [ DiscardedGroupsLength (${discardedGroups.length}) / AvailableGroupsLength (${availableGroups.length}) ])`);
     return cost;
   }
 
