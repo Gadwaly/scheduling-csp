@@ -23,6 +23,7 @@ export class Scheduler {
   groupOrderingMethods: string[];
   scheduleStateCounter: number;
   combinationsMap: { [key: string]: CombinationsMapValue };
+  configs: { forwardChecking: boolean; improveAssignedValues: boolean };
 
   constructor(data: SchedulerData) {
     this.variables = data?.variables;
@@ -33,6 +34,7 @@ export class Scheduler {
     this.setGroupOrderingMethods(data.groupOrderingMethods);
     this.scheduleStateCounter = 0;
     this.combinationsMap = {};
+    this.configs = { forwardChecking: true, improveAssignedValues: true };
   };
 
   setVariablePickingMethod = (method = 'min-values'): void => {
@@ -68,10 +70,12 @@ export class Scheduler {
         })
         this.currentSchedule = new CurrentSchedule()
       }
-      this.csp();
+      this.csp(this.configs.forwardChecking);
       firstCSP = false
     }while(!this.allVariablesHasAssignedValue())
-    this.improveAssignedValues();
+    if(this.configs.improveAssignedValues) {
+      this.improveAssignedValues();
+    }
     this.updateCurrentSchedule();
     return this.getFinalSchedule();
   };
@@ -82,16 +86,29 @@ export class Scheduler {
     });
   };
 
-  protected csp = (): void => {
+  protected csp = (forwardChecking: boolean): void => {
     if (this.allVariablesHasAssignedValue()) return;
     const currentVariable = this.pickVariable();
     for (let group of currentVariable.availableDomainGroups()) {
       currentVariable.assignedValue = group;
-      this.updateCurrentSchedule(currentVariable);
-      if (this.forwardCheck(currentVariable)) return this.csp();
-      this.updateVisualizer(currentVariable);
-      currentVariable.resetAssignedValue();
+      if (!forwardChecking) {
+        if (!this.isClash(currentVariable.assignedValue)) {
+          this.updateCurrentSchedule(currentVariable);
+          this.updateVisualizer(currentVariable);
+          return this.csp(forwardChecking);
+        }
+        currentVariable.resetAssignedValue();
+      } else {
+        this.updateCurrentSchedule(currentVariable);
+        if (this.forwardCheck(currentVariable)) return this.csp(forwardChecking);
+        this.updateVisualizer(currentVariable);
+        currentVariable.resetAssignedValue();
+      }
     }
+  };
+
+  private isClash = (group: CourseGroup): boolean => {
+    return group.clashesWith(this.currentSchedule);
   };
 
   private forwardCheck = (currentVariable: Variable): boolean  => {
@@ -108,7 +125,7 @@ export class Scheduler {
     return true;
   };
 
-  protected improveAssignedValues = (iterations = 1) => {
+  protected improveAssignedValues = (iterations = 1): void => {
     for(let i = 0; i < iterations; i++) {
       let previousCombination = this.getCurrentCombination();
       for (let variable of this.variables) {
@@ -226,7 +243,7 @@ export class Scheduler {
   getCurrentScore(){
     let scoreCaclculator: ScheduleScoreCalculator = new ScheduleScoreCalculator(this.currentSchedule, this.softConstraints)
     let scoreAfter = scoreCaclculator.calculate()
-    scoreCaclculator.printLogs()
+    // scoreCaclculator.printLogs()
     return scoreAfter
   }
 
@@ -245,7 +262,7 @@ export class Scheduler {
   }
 
   isValidCombination = (): boolean => {
-    this.csp();
+    this.csp(this.configs.forwardChecking);
     return this.allVariablesHasAssignedValue();
   }
 };
@@ -332,7 +349,7 @@ class TempScheduler extends Scheduler{
         }
       }
     }
-    this.csp();
+    this.csp(this.configs.forwardChecking);
     this.improveAssignedValues();
     this.updateCurrentSchedule();    
     if (this.getCurrentScore() > this.scheduleScoreBefore && (this.allVariablesHasAssignedValue())){
@@ -355,7 +372,7 @@ class TempScheduler extends Scheduler{
     })
     maxCostVariable.resetAssignedValue()
     this.updateCurrentSchedule()
-    this.csp();
+    this.csp(this.configs.forwardChecking);
     this.updateCurrentSchedule()
     if (this.getCurrentScore() > this.scheduleScoreBefore){
       return {variables: this.variables, currentSchedule: this.currentSchedule}
