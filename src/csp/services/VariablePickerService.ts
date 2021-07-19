@@ -68,27 +68,41 @@ class MinValuesBasedVariablePicker extends VariablePicker {
 
 class AverageDomainCostsVariablePicker extends VariablePicker {
   pick = (): Variable => {
-    let min = Number.MAX_SAFE_INTEGER;
+    let variablesMap: { values: number; variable: Variable; }[] = [];
+    let max = Number.MIN_SAFE_INTEGER;
+    let inferences = false;
     let selectedVariable: Variable;
     for (let variable of this.variables) {
       if (!variable.hasAssignedValue()) {
         let availableGroupsCount = variable.availableDomainGroups().length;
         if (availableGroupsCount === 1) {
           selectedVariable = variable;
+          inferences = true;
           break;
         }
         variable.updateDomainCosts(this.data);
-        let averageDomainCosts = variable.domain.reduce(
+        let averageDomainCosts = variable.availableDomainGroups().reduce(
           (accumalator, courseGroup) => {
             return accumalator + courseGroup.cost
           },
-        0 ) / variable.domain.length;
-        if (averageDomainCosts < min) {
-          min = averageDomainCosts;
+        0 ) / availableGroupsCount;
+        // let values = 0;
+        // variable.availableDomainGroups().forEach((group) => {
+          // if (group.cost <= averageDomainCosts) {
+          //   values++;
+          // }
+        // });
+        // variablesMap.push({ values, variable });
+        if (averageDomainCosts > max) {
+          max = averageDomainCosts;
           selectedVariable = variable;
         }
       }
     }
+    // if (!inferences) {
+    //   variablesMap.sort((a, b) => a.values - b.values);
+    //   selectedVariable = variablesMap[0].variable;
+    // }
     return selectedVariable;
   }
 };
