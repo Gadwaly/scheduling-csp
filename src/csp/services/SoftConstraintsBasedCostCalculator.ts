@@ -161,7 +161,7 @@ export class SoftConstraintsBasedCostCalculator {
           break;
         }
       }
-      if (!hit) hits--;
+      // if (!hit) hits--;
       hit = false;
     }
 
@@ -174,8 +174,7 @@ export class SoftConstraintsBasedCostCalculator {
     internalWieght = +configs.weights.instructor
   ) => {
     if (this.instructor && instructors[this.course]) {
-      if (this.instructor === instructors[this.course].instructor)
-        return -1 * internalWieght;
+      if (this.instructor === instructors[this.course].instructor) return 0;
       return 1 * internalWieght;
     }
     return 0;
