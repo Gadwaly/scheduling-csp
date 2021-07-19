@@ -120,9 +120,9 @@ function App() {
     const coursesInstructorsArray = courses.filter((course) => 
       course.selectedInstructor
     ).map((course) => {
-      return { [course.code]: {instructor:course.selectedInstructor}}
+      return { code: course.code, instructor: course.selectedInstructor }
     })
-    const coursesInstructors = Object.assign({}, ...coursesInstructorsArray)
+    // const coursesInstructors = Object.assign({}, ...coursesInstructorsArray)
     
     const preferencesObject = {
       ...(earlyLate[0] && {
@@ -149,10 +149,10 @@ function App() {
           order: gaps[1],
         },
       }),
-      ...(coursesInstructors && Object.keys(coursesInstructors).length !== 0 && {
-        courses: {
-          ...coursesInstructors
-        },
+      ...(coursesInstructorsArray.length !== 0 && {
+        courses: [
+          ...coursesInstructorsArray
+        ],
       }),
     };
     setPreferences({
