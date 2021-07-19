@@ -126,6 +126,7 @@ export class Scheduler {
   };
 
   protected improveAssignedValues = (iterations = 1): void => {
+    const beforeScore = this.getCurrentScore();
     for(let i = 0; i < iterations; i++) {
       let previousCombination = this.getCurrentCombination();
       for (let variable of this.variables) {
@@ -146,31 +147,32 @@ export class Scheduler {
         break;
       }
     }
-    if(this.combinationsMap[this.getCurrentCombination()]) {
-      let max = Number.MIN_SAFE_INTEGER;
-      let selectedCombinationsMapValue: CombinationsMapValue;
-      Object.keys(this.combinationsMap).forEach((key) => {
-        const combinationsMapValue = this.combinationsMap[key];
-        if(combinationsMapValue.score > max) {
-          max = combinationsMapValue.score;
-          selectedCombinationsMapValue = combinationsMapValue;
+    let max = Number.MIN_SAFE_INTEGER;
+    let selectedCombinationsMapValue: CombinationsMapValue;
+    Object.keys(this.combinationsMap).forEach((key) => {
+      const combinationsMapValue = this.combinationsMap[key];
+      if(combinationsMapValue.score > max) {
+        max = combinationsMapValue.score;
+        selectedCombinationsMapValue = combinationsMapValue;
+      }
+    });
+    if(this.getCurrentScore() < selectedCombinationsMapValue.score && !this.isCurrentCombination(selectedCombinationsMapValue)) {
+      this.variables.forEach((variable) => { variable.resetAssignedValue() });
+      selectedCombinationsMapValue.schedule.forEach((combinationsMapValue) => {
+        let currentVariable = combinationsMapValue.variable;
+        currentVariable.assignedValue = combinationsMapValue.assignedValue;
+        this.updateCurrentSchedule(currentVariable);
+        for(let variable of this.variables) {
+          if(variable !== currentVariable) {
+            const clashingCourseGroups = variable.getClashingCourseGroups(this.currentSchedule);
+            currentVariable.assignedValue.addToClashingCourseGroups(clashingCourseGroups);
+          }
         }
       });
-      if(!this.isCurrentCombination(selectedCombinationsMapValue)) {
-        this.variables.forEach((variable) => { variable.resetAssignedValue() });
-        selectedCombinationsMapValue.schedule.forEach((combinationsMapValue) => {
-          let currentVariable = combinationsMapValue.variable;
-          currentVariable.assignedValue = combinationsMapValue.assignedValue;
-          this.updateCurrentSchedule(currentVariable);
-          for(let variable of this.variables) {
-            if(variable !== currentVariable) {
-              const clashingCourseGroups = variable.getClashingCourseGroups(this.currentSchedule);
-              currentVariable.assignedValue.addToClashingCourseGroups(clashingCourseGroups);
-            }
-          }
-        });
-      }
     }
+    const finalScore = this.getCurrentScore();
+    // if(beforeScore > finalScore)
+    //   console.log('ERROR');
   };
 
   private isCurrentCombination = (combination: CombinationsMapValue): boolean => {
