@@ -1,6 +1,8 @@
-import { CurrentSchedule } from "../models";
-import { SoftConstraint, dayNumber } from "../types";
+// @ts-nocheck
+import { CourseGroup, CurrentSchedule } from "../models";
+import { SoftConstraint, dayNumber, DayValue } from "../types";
 import configs from "../configs.json";
+import { ScheduleScoreCalculator } from "./ScheduleScoreCalculator";
 
 export interface SoftConstraintsCostCalculatorData {
   periods: number[][];
@@ -30,13 +32,52 @@ export class SoftConstraintsBasedCostCalculator {
     currentSchedule: CurrentSchedule,
     softConstraints: SoftConstraint[]
   ): number => {
-    return softConstraints.reduce((accumalator, softConstraint) => {
-      return (
-        accumalator +
-        weightsMap[softConstraint.priority] *
-          this[softConstraint.type](currentSchedule, softConstraint.param)
-      );
-    }, 0);
+    const _currentSchedule = {};
+
+    _currentSchedule["schedule"] = [...currentSchedule.schedule];
+    this.periods.forEach((period) => {
+      const from = period[0],
+        to = period[1];
+
+      for (let i = from; i <= to; i++) _currentSchedule["schedule"][i] = true;
+    });
+
+    const _periods = this.periods.map((period) => {
+      let day = Math.floor(period[0] / 12);
+      const dayString: DayValue = Object.keys(dayNumber)[day];
+      const from = period[0] - 12 * day + 1;
+      const to = period[1] - 12 * day + 1;
+      return {
+        day: dayString,
+        from,
+        to,
+      };
+    });
+
+    _currentSchedule["scheduleGroups"] = [
+      ...currentSchedule.scheduleGroups,
+      new CourseGroup("x", _periods, this.instructor, this.course),
+    ];
+
+    let scoreCaclculator: ScheduleScoreCalculator = new ScheduleScoreCalculator(
+      _currentSchedule,
+      softConstraints
+    );
+    let scoreAfter = scoreCaclculator.calculate();
+
+    console.log(
+      _currentSchedule.schedule,
+      _currentSchedule.scheduleGroups,
+      scoreAfter
+    );
+    return -scoreAfter;
+    // return softConstraints.reduce((accumalator, softConstraint) => {
+    //   return (
+    //     accumalator +
+    //     weightsMap[softConstraint.priority] *
+    //       this[softConstraint.type](currentSchedule, softConstraint.param)
+    //   );
+    // }, 0);
   };
 
   private minDays = (
@@ -141,6 +182,7 @@ export class SoftConstraintsBasedCostCalculator {
 
       for (let i = firstPeriod; i < lastPeriod; i++) if (!schedule[i]) gaps++;
     });
+
     return (gaps - gaps_before) * internalWieght;
   };
 
