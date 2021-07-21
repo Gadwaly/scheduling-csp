@@ -65,11 +65,11 @@ export class SoftConstraintsBasedCostCalculator {
     );
     let scoreAfter = scoreCaclculator.calculate();
 
-    console.log(
-      _currentSchedule.schedule,
-      _currentSchedule.scheduleGroups,
-      scoreAfter
-    );
+    // console.log(
+    //   _currentSchedule.schedule,
+    //   _currentSchedule.scheduleGroups,
+    //   scoreAfter
+    // );
     return -scoreAfter;
     // return softConstraints.reduce((accumalator, softConstraint) => {
     //   return (
