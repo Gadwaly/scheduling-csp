@@ -1,5 +1,6 @@
-import { CurrentSchedule } from "../models";
-import { SoftConstraint, dayNumber } from "../types";
+// @ts-nocheck
+import { CourseGroup, CurrentSchedule } from "../models";
+import { SoftConstraint, dayNumber, DayValue } from "../types";
 import configs from "../configs.json";
 import { ScheduleScoreCalculator } from "./ScheduleScoreCalculator";
 
@@ -31,8 +32,33 @@ export class SoftConstraintsBasedCostCalculator {
     currentSchedule: CurrentSchedule,
     softConstraints: SoftConstraint[]
   ): number => {
+    console.log(currentSchedule.schedule, currentSchedule.scheduleGroups);
+    const _currentSchedule = {};
+    _currentSchedule["schedule"] = [...currentSchedule.schedule];
+    const _periods = this.periods.map((period) => {
+      let day = Math.floor(period[0] / 12);
+      const dayString: DayValue = Object.keys(dayNumber)[day];
+      const from = period[0] - 12 * day + 1;
+      const to = period[1] - 12 * day + 1;
+      return {
+        day: dayString,
+        from,
+        to,
+      };
+    });
+    this.periods.forEach((period) => {
+      const from = period[0],
+        to = period[1];
+
+      for (let i = from; i <= to; i++) _currentSchedule["schedule"][i] = true;
+    });
+    _currentSchedule["scheduleGroups"] = [...currentSchedule.scheduleGroups];
+    _currentSchedule["scheduleGroups"].push(
+      new CourseGroup("x", _periods, this.instructor, this.course)
+    );
+
     let scoreCaclculator: ScheduleScoreCalculator = new ScheduleScoreCalculator(
-      currentSchedule,
+      _currentSchedule,
       softConstraints
     );
     let scoreAfter = scoreCaclculator.calculate();
