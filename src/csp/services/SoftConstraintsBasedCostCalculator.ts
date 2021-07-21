@@ -97,7 +97,9 @@ export class SoftConstraintsBasedCostCalculator {
     currentSchedule: CurrentSchedule,
     internalWieght = +configs.weights.gaps
   ) => {
-    let gaps = 0;
+    let gaps = 0,
+      gaps_before = 0;
+    let current = currentSchedule.schedule;
     let schedule = [...currentSchedule.schedule];
     let periodDays: number[] = [];
 
@@ -116,6 +118,21 @@ export class SoftConstraintsBasedCostCalculator {
         lastPeriod = day * 12;
 
       for (let i = day * 12; i < day * 12 + 12; i++) {
+        if (current[i]) {
+          if (firstPeriod > i) firstPeriod = i;
+          if (lastPeriod < i) lastPeriod = i;
+        }
+      }
+
+      for (let i = firstPeriod; i < lastPeriod; i++)
+        if (!current[i]) gaps_before++;
+    });
+
+    periodDays.forEach((day) => {
+      let firstPeriod = day * 12 + 11,
+        lastPeriod = day * 12;
+
+      for (let i = day * 12; i < day * 12 + 12; i++) {
         if (schedule[i]) {
           if (firstPeriod > i) firstPeriod = i;
           if (lastPeriod < i) lastPeriod = i;
@@ -124,7 +141,7 @@ export class SoftConstraintsBasedCostCalculator {
 
       for (let i = firstPeriod; i < lastPeriod; i++) if (!schedule[i]) gaps++;
     });
-    return gaps * internalWieght;
+    return (gaps - gaps_before) * internalWieght;
   };
 
   private gapsPlus = (
@@ -161,7 +178,7 @@ export class SoftConstraintsBasedCostCalculator {
           break;
         }
       }
-      // if (!hit) hits--;
+      if (!hit) hits--;
       hit = false;
     }
 
@@ -174,7 +191,8 @@ export class SoftConstraintsBasedCostCalculator {
     internalWieght = +configs.weights.instructor
   ) => {
     if (this.instructor && instructors[this.course]) {
-      if (this.instructor === instructors[this.course].instructor) return 0;
+      if (this.instructor === instructors[this.course].instructor)
+        return -1 * internalWieght;
       return 1 * internalWieght;
     }
     return 0;
