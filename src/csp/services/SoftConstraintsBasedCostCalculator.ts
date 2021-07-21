@@ -1,6 +1,7 @@
 import { CurrentSchedule } from "../models";
 import { SoftConstraint, dayNumber } from "../types";
 import configs from "../configs.json";
+import { ScheduleScoreCalculator } from "./ScheduleScoreCalculator";
 
 export interface SoftConstraintsCostCalculatorData {
   periods: number[][];
@@ -30,13 +31,19 @@ export class SoftConstraintsBasedCostCalculator {
     currentSchedule: CurrentSchedule,
     softConstraints: SoftConstraint[]
   ): number => {
-    return softConstraints.reduce((accumalator, softConstraint) => {
-      return (
-        accumalator +
-        weightsMap[softConstraint.priority] *
-          this[softConstraint.type](currentSchedule, softConstraint.param)
-      );
-    }, 0);
+    let scoreCaclculator: ScheduleScoreCalculator = new ScheduleScoreCalculator(
+      currentSchedule,
+      softConstraints
+    );
+    let scoreAfter = scoreCaclculator.calculate();
+    return -scoreAfter;
+    // return softConstraints.reduce((accumalator, softConstraint) => {
+    //   return (
+    //     accumalator +
+    //     weightsMap[softConstraint.priority] *
+    //       this[softConstraint.type](currentSchedule, softConstraint.param)
+    //   );
+    // }, 0);
   };
 
   private minDays = (
@@ -141,6 +148,7 @@ export class SoftConstraintsBasedCostCalculator {
 
       for (let i = firstPeriod; i < lastPeriod; i++) if (!schedule[i]) gaps++;
     });
+
     return (gaps - gaps_before) * internalWieght;
   };
 
