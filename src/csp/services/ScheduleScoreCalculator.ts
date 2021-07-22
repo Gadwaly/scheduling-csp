@@ -193,13 +193,14 @@ export class ScheduleScoreCalculator {
           this.logs.push(
             `days off: ${days[i]} is not off  [-1 * ${internalWieght} * ${priority}]`
           );
-      } else {
-        hits++;
-        if (log)
-          this.logs.push(
-            `days off: ${days[i]} is off  [+1 * ${internalWieght} * ${priority}]`
-          );
-      }
+      } 
+      // else {
+      //   hits++;
+      //   if (log)
+      //     this.logs.push(
+      //       `days off: ${days[i]} is off  [+1 * ${internalWieght} * ${priority}]`
+      //     );
+      // }
     }
 
     return hits * internalWieght;
@@ -218,13 +219,13 @@ export class ScheduleScoreCalculator {
           scheduleGroup.instructor ===
           instructors[scheduleGroup.course].instructor
         ) {
-          hits++;
-          if (log)
-            this.logs.push(
-              `Instructor: ${scheduleGroup.course} is registered with ${
-                instructors[scheduleGroup.course].instructor
-              } [+1 * ${internalWieght} * ${priority}]`
-            );
+          // hits++;
+          // if (log)
+          //   this.logs.push(
+          //     `Instructor: ${scheduleGroup.course} is registered with ${
+          //       instructors[scheduleGroup.course].instructor
+          //     } [+1 * ${internalWieght} * ${priority}]`
+          //   );
         } else {
           hits--;
           if (log)
