@@ -213,27 +213,23 @@ export class ScheduleScoreCalculator {
     log = true
   ) => {
     let hits = 0;
+    let instructorsObject =  {}
+    instructors.forEach(instructor => {
+      instructorsObject[instructor.code] = {instructor: instructor?.instructor}
+    })
     this.currentSchedule.scheduleGroups.forEach((scheduleGroup) => {
-      if (scheduleGroup.instructor && instructors[scheduleGroup.course]) {
+      if (scheduleGroup.instructor && instructorsObject[scheduleGroup.course] && instructorsObject[scheduleGroup.course].instructor) {
         if (
-          scheduleGroup.instructor ===
-          instructors[scheduleGroup.course].instructor
-        ) {
-          // hits++;
-          // if (log)
-          //   this.logs.push(
-          //     `Instructor: ${scheduleGroup.course} is registered with ${
-          //       instructors[scheduleGroup.course].instructor
-          //     } [+1 * ${internalWieght} * ${priority}]`
-          //   );
-        } else {
-          hits--;
-          if (log)
-            this.logs.push(
-              `Instructor: ${scheduleGroup.course} is not registered with ${
-                instructors[scheduleGroup.course].instructor
-              } [-1 * ${internalWieght} * ${priority}]`
-            );
+          scheduleGroup.instructor !== instructorsObject[scheduleGroup.course].instructor
+          ) {
+            hits--;
+            if(log){
+              this.logs.push(
+                `Instructor: ${scheduleGroup.course} is not registered with ${
+                  instructorsObject[scheduleGroup.course].instructor
+                } [-1 * ${internalWieght} * ${priority}]`
+              );                
+            }
         }
       }
     });
