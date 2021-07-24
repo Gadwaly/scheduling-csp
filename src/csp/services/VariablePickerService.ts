@@ -118,6 +118,7 @@ class FirstUnAssigned extends VariablePicker {
         break;
       }
     }
+    selectedVariable.updateDomainCosts(this.data);
     return selectedVariable;
   };
 };
