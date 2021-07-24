@@ -1,6 +1,8 @@
-import { CourseGroup, CurrentSchedule } from '.';
-import { RegistredGroup } from '../types';
-import { SchedulerContextData } from '../services';
+// @ts-nocheck
+// elmon2sha b3d bokra
+import { CourseGroup, CurrentSchedule } from ".";
+import { RegistredGroup } from "../types";
+import { SchedulerContextData } from "../services";
 
 export class Variable {
   courseName: string;
@@ -10,37 +12,54 @@ export class Variable {
   domain: CourseGroup[];
   backtrackingCauseCount: number;
 
-  constructor(name: string, code: string, domain: CourseGroup[], creditHours: number) {
+  constructor(
+    name: string,
+    code: string,
+    domain: CourseGroup[],
+    creditHours: number
+  ) {
     this.courseName = name;
     this.domain = domain;
     this.courseCode = code;
     this.creditHours = creditHours;
     this.assignedValue = null;
     this.backtrackingCauseCount = 0;
-  };
+  }
 
   resetAssignedValue = () => {
-    if(this.assignedValue){
+    if (this.assignedValue) {
       this.assignedValue.resetClashingCourseGroups();
       this.assignedValue = null;
     }
-  }
+  };
 
-  getClashingCourseGroups = (currentSchedule: CurrentSchedule): CourseGroup[] => {
+  getClashingCourseGroups = (
+    currentSchedule: CurrentSchedule
+  ): CourseGroup[] => {
     let clashingCourseGroups: CourseGroup[] = [];
     this.domain.forEach((courseGroup) => {
-      if (!currentSchedule.scheduleGroups.includes(courseGroup) && courseGroup.clashesWith(currentSchedule)) {
+      if (
+        !currentSchedule.scheduleGroups.includes(courseGroup) &&
+        courseGroup.clashesWith(currentSchedule)
+      ) {
         clashingCourseGroups.push(courseGroup);
       }
     });
     return clashingCourseGroups;
   };
 
-  updateDomainCosts = (data: { schedulerContextData: SchedulerContextData }): void => {
+  updateDomainCosts = (data: {
+    schedulerContextData: SchedulerContextData;
+  }): void => {
     data.schedulerContextData.currentVariable = this;
     this.domain.forEach((courseGroup) => courseGroup.updateCost(data));
 
     this.domain.sort((group1: CourseGroup, group2: CourseGroup) => {
+      if (group1.cost === group2.cost) {
+        if (group1.discardedGroupsLength === group2.discardedGroupsLength)
+          return group2.averageDiscardedCost - group1.averageDiscardedCost;
+        return group1.discardedGroupsLength - group2.discardedGroupsLength;
+      }
       return group1.cost - group2.cost;
     });
   };
@@ -49,7 +68,8 @@ export class Variable {
     return this.domain.every((courseGroup) => courseGroup.discarded());
   };
 
-  availableDomainGroups = (): CourseGroup[] => this.domain.filter((group) => !group.discarded());
+  availableDomainGroups = (): CourseGroup[] =>
+    this.domain.filter((group) => !group.discarded());
 
   hasAssignedValue = (): boolean => this.assignedValue != null;
 
@@ -59,18 +79,21 @@ export class Variable {
       group: this.assignedValue.groupNum,
       tutorial: this.assignedValue.periodsIds.tutorial,
       lab: this.assignedValue.periodsIds.lab,
-    }
+    };
   };
 
   resetState = (): void => {
-    this.resetAssignedValue()
-    this.backtrackingCauseCount = 0
-  }
+    this.resetAssignedValue();
+    this.backtrackingCauseCount = 0;
+  };
 
   clone = (): Variable => {
-    let clonedVariable = Object.assign(new Variable(null, null, [], null), JSON.parse(JSON.stringify(this)))
-    clonedVariable.assignedValue = this.assignedValue?.uniqueID
-    clonedVariable.domain = this.domain.map(cGroup => cGroup.clone())
-    return clonedVariable
-  }
-};
+    let clonedVariable = Object.assign(
+      new Variable(null, null, [], null),
+      JSON.parse(JSON.stringify(this))
+    );
+    clonedVariable.assignedValue = this.assignedValue?.uniqueID;
+    clonedVariable.domain = this.domain.map((cGroup) => cGroup.clone());
+    return clonedVariable;
+  };
+}

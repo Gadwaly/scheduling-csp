@@ -41,7 +41,9 @@ export class Scheduler {
     this.variablePickingMethod = method;
   };
 
-  setGroupOrderingMethods = (methods = ['considerDiscardedAverageCostsWithTheirPercentage']): void => {
+  setGroupOrderingMethods = (
+    methods = ["considerDiscardedAverageCostsWithTheirPercentage"]
+  ): void => {
     this.groupOrderingMethods = methods;
   };
 
@@ -82,7 +84,7 @@ export class Scheduler {
       this.csp(this.configs.forwardChecking);
       firstCSP = false;
     } while (!this.allVariablesHasAssignedValue());
-    if(this.configs.improveAssignedValues) {
+    if (this.configs.improveAssignedValues) {
       this.improveAssignedValues();
     }
     this.updateCurrentSchedule();
