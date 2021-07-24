@@ -112,11 +112,12 @@ class AverageDomainCostsVariablePicker extends VariablePicker {
 class FirstUnAssigned extends VariablePicker {
   pick = (): Variable => {
     let selectedVariable: Variable;
-    this.variables.forEach((variable) => {
-      if(!variable.hasAssignedValue())
+    for(let variable of this.variables) {
+      if(!variable.hasAssignedValue()) {
         selectedVariable = variable;
         break;
-    });
+      }
+    }
     return selectedVariable;
   };
 };
