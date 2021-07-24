@@ -4,6 +4,8 @@ import { SchedulerContextData } from '.';
 
 export const getVariablePicker = (pickingMethod: string, data: { schedulerContextData: SchedulerContextData }): VariablePicker => {
   switch(pickingMethod) {
+    case 'first-unAssigned':
+      return new FirstUnAssigned(data);
     case 'costs':
       return new CostBasedVariablePicker(data);
     case 'min-values':
@@ -105,4 +107,16 @@ class AverageDomainCostsVariablePicker extends VariablePicker {
     // }
     return selectedVariable;
   }
+};
+
+class FirstUnAssigned extends VariablePicker {
+  pick = (): Variable => {
+    let selectedVariable: Variable;
+    this.variables.forEach((variable) => {
+      if(!variable.hasAssignedValue())
+        selectedVariable = variable;
+        break;
+    });
+    return selectedVariable;
+  };
 };
